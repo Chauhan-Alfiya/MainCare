@@ -1,0 +1,676 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Student Dashboard | MindCare</title>
+
+    <!-- Bootstrap 5 CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Bootstrap Icons -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" rel="stylesheet">
+
+    <style>
+        :root {
+            --brand-dark-teal: #0e4a5c;
+            --brand-deep-navy: #06232d;
+            --brand-mint: #2dd4bf;
+            --brand-mint-hover: #14b8a6;
+            --bg-canvas: #f0f4f8;
+            --card-border: #e2e8f0;
+        }
+
+        body {
+            background-color: var(--bg-canvas);
+            font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+            color: #1e293b;
+        }
+
+        /* Modern Professional Top Navbar */
+        .portal-navbar {
+            background: #ffffff;
+            border-bottom: 1px solid var(--card-border);
+            padding: 12px 32px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.03);
+        }
+
+        .brand-text {
+            font-weight: 800;
+            font-size: 1.35rem;
+            color: var(--brand-dark-teal);
+            letter-spacing: -0.5px;
+        }
+
+        .brand-text span {
+            color: var(--brand-mint-hover);
+        }
+
+        .nav-status-badge {
+            background: #f0fdfa;
+            color: var(--brand-dark-teal);
+            border: 1px solid #ccfbf1;
+            font-weight: 600;
+            font-size: 0.78rem;
+            padding: 6px 14px;
+            border-radius: 20px;
+        }
+
+        /* Top Profile Avatar Trigger Button */
+        .avatar-circle {
+            width: 44px;
+            height: 44px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, var(--brand-dark-teal), var(--brand-mint-hover));
+            color: #ffffff;
+            font-weight: 700;
+            font-size: 1.1rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            border: 2px solid #ffffff;
+            box-shadow: 0 3px 10px rgba(14, 74, 92, 0.2);
+            transition: all 0.2s ease;
+        }
+
+        .avatar-circle:hover {
+            transform: scale(1.05);
+            box-shadow: 0 4px 14px rgba(20, 184, 166, 0.35);
+        }
+
+        /* Centered Student Hero Section */
+        .hero-section {
+            background: linear-gradient(135deg, var(--brand-deep-navy) 0%, var(--brand-dark-teal) 100%);
+            color: #ffffff;
+            padding: 55px 20px 95px 20px;
+            border-bottom-left-radius: 28px;
+            border-bottom-right-radius: 28px;
+            text-align: center;
+        }
+
+        .hero-badge {
+            background: rgba(45, 212, 191, 0.15);
+            color: var(--brand-mint);
+            padding: 8px 20px;
+            border-radius: 30px;
+            font-size: 0.82rem;
+            font-weight: 600;
+            display: inline-block;
+            backdrop-filter: blur(6px);
+            margin-bottom: 18px;
+            border: 1px solid rgba(45, 212, 191, 0.25);
+        }
+
+        .btn-mint {
+            background-color: var(--brand-mint-hover);
+            color: #ffffff;
+            font-weight: 600;
+            border-radius: 30px;
+            padding: 12px 30px;
+            border: none;
+            transition: all 0.2s ease;
+            font-size: 0.95rem;
+        }
+
+        .btn-mint:hover {
+            background-color: #0d9488;
+            color: #ffffff;
+            transform: translateY(-2px);
+            box-shadow: 0 6px 16px rgba(20, 184, 166, 0.3);
+        }
+
+        .btn-outline-mint {
+            border: 2px solid rgba(255, 255, 255, 0.6);
+            color: #ffffff;
+            font-weight: 600;
+            border-radius: 30px;
+            padding: 12px 30px;
+            transition: all 0.2s ease;
+            font-size: 0.95rem;
+        }
+
+        .btn-outline-mint:hover {
+            background: rgba(255, 255, 255, 0.15);
+            color: #ffffff;
+            border-color: #ffffff;
+            transform: translateY(-2px);
+        }
+
+        /* Floating Content Container */
+        .dashboard-container {
+            margin-top: -55px;
+            padding-bottom: 60px;
+        }
+
+        .card-custom {
+            background: #ffffff;
+            border: 1px solid var(--card-border);
+            border-radius: 18px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.04);
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+
+        .card-custom:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.06);
+        }
+
+        /* Custom MindCare Themed Offcanvas Sidebar Drawer */
+        .account-offcanvas {
+            width: 330px !important;
+            border-top-left-radius: 24px;
+            border-bottom-left-radius: 24px;
+            border: none;
+            background: #ffffff;
+            box-shadow: -10px 0 30px rgba(0, 0, 0, 0.08);
+        }
+
+        .offcanvas-header .offcanvas-title {
+            font-size: 0.8rem;
+            font-weight: 800;
+            letter-spacing: 0.08em;
+            color: #94a3b8;
+        }
+
+        /* MindCare Themed Profile Box */
+        .profile-card-box {
+            background: linear-gradient(135deg, #f0fdfa 0%, #e6f4f8 100%);
+            border-radius: 20px;
+            padding: 24px 20px;
+            text-align: center;
+            border: 1px solid #ccfbf1;
+            margin-bottom: 20px;
+        }
+
+        .profile-avatar-large {
+            width: 75px;
+            height: 75px;
+            background: var(--brand-dark-teal);
+            color: #ffffff;
+            font-size: 2rem;
+            font-weight: 800;
+            border-radius: 22px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 12px auto;
+            box-shadow: 0 6px 16px rgba(14, 74, 92, 0.25);
+        }
+
+        .profile-name {
+            font-size: 1.25rem;
+            font-weight: 800;
+            color: var(--brand-dark-teal);
+            margin-bottom: 6px;
+        }
+
+        .badge-role {
+            background-color: var(--brand-mint-hover);
+            color: #ffffff;
+            font-weight: 700;
+            font-size: 0.7rem;
+            padding: 5px 16px;
+            border-radius: 20px;
+            letter-spacing: 0.05em;
+            display: inline-block;
+        }
+
+        /* MindCare Sidebar Menu Cards */
+        .sidebar-menu-card {
+            background-color: #f8fafc;
+            border-radius: 14px;
+            padding: 14px 18px;
+            margin-bottom: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            text-decoration: none;
+            color: #334155;
+            font-weight: 600;
+            font-size: 0.92rem;
+            border: 1px solid transparent;
+            transition: all 0.2s ease;
+        }
+
+        .sidebar-menu-card:hover {
+            background-color: #ffffff;
+            border-color: #cbd5e1;
+            color: var(--brand-dark-teal);
+            box-shadow: 0 4px 12px rgba(14, 74, 92, 0.06);
+        }
+
+        .sidebar-menu-card .menu-icon {
+            font-size: 1.15rem;
+            color: var(--brand-dark-teal);
+            margin-right: 12px;
+            display: flex;
+            align-items: center;
+        }
+
+        .sidebar-menu-card .arrow-icon {
+            color: #cbd5e1;
+            font-size: 1rem;
+            transition: transform 0.2s;
+        }
+
+        .sidebar-menu-card:hover .arrow-icon {
+            color: var(--brand-mint-hover);
+            transform: translateX(3px);
+        }
+
+        /* Clean Table Styling */
+        .table-custom th {
+            font-size: 0.75rem;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            color: #64748b;
+            background: #f8fafc;
+            padding: 12px 16px;
+        }
+
+        .table-custom td {
+            padding: 16px;
+            vertical-align: middle;
+        }
+
+        /* Mood Selector UI */
+        .mood-pill {
+            border: 2px solid var(--card-border);
+            border-radius: 12px;
+            padding: 14px;
+            text-align: center;
+            background: #fff;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .mood-pill:hover, .mood-pill.active {
+            border-color: var(--brand-mint-hover);
+            background: #f0fdfa;
+            color: var(--brand-dark-teal);
+        }
+    </style>
+</head>
+
+<body>
+
+    <!-- Professional Top Navbar -->
+    <nav class="portal-navbar sticky-top">
+        <div class="d-flex justify-content-between align-items-center max-w-1320 mx-auto">
+            
+            <!-- Brand Logo -->
+            <div class="d-flex align-items-center gap-2">
+                <img src="{{ url_for('static', filename='images/logo.png') }}" width="36" alt="MindCare Logo">
+                <span class="brand-text">Mind<span>Care</span></span>
+            </div>
+
+            <!-- Navbar Quick Status & Avatar Button -->
+            <div class="d-flex align-items-center gap-3">
+                <span class="nav-status-badge d-none d-md-inline-block">
+                    <i class="bi bi-person-check-fill me-1 text-teal"></i> Active Student Portal
+                </span>
+
+                <!-- Avatar Button (Opens Right Drawer Menu) -->
+                <div class="avatar-circle" data-bs-toggle="offcanvas" data-bs-target="#accountSidebar" aria-controls="accountSidebar" title="Account Menu">
+                    {{ session['username'][0] | upper if session.get('username') else 'S' }}
+                </div>
+            </div>
+
+        </div>
+    </nav>
+
+    <!-- ================= MINDCARE CUSTOM SIDEBAR DRAWER ================= -->
+    <div class="offcanvas offcanvas-end account-offcanvas p-3" tabindex="-1" id="accountSidebar" aria-labelledby="accountSidebarLabel">
+        
+        <div class="offcanvas-header pb-2">
+            <h6 class="offcanvas-title text-uppercase" id="accountSidebarLabel">STUDENT NAVIGATION</h6>
+            <button type="button" class="btn-close text-reset" data-bs-dismiss="offcanvas" aria-label="Close"></button>
+        </div>
+
+        <div class="offcanvas-body pt-0">
+            
+            <!-- Student Profile Box -->
+            <div class="profile-card-box">
+                <div class="profile-avatar-large">
+                    {{ session['username'][0] | upper if session.get('username') else 'S' }}
+                </div>
+                <div class="profile-name">
+                    {{ session.get('username', 'Student Account') }}
+                </div>
+                <span class="badge-role text-uppercase">
+                    STUDENT PORTAL
+                </span>
+            </div>
+
+            <!-- Navigation Menu Items -->
+            <a href="#" onclick="showSection('dashboard')" class="sidebar-menu-card" data-bs-dismiss="offcanvas">
+                <div class="d-flex align-items-center">
+                    <span class="menu-icon"><i class="bi bi-grid-1x2-fill"></i></span>
+                    <span>Dashboard Overview</span>
+                </div>
+                <i class="bi bi-chevron-right arrow-icon"></i>
+            </a>
+
+            <a href="#" onclick="showSection('profile')" class="sidebar-menu-card" data-bs-dismiss="offcanvas">
+                <div class="d-flex align-items-center">
+                    <span class="menu-icon"><i class="bi bi-person-bounding-box"></i></span>
+                    <span>My Profile</span>
+                </div>
+                <i class="bi bi-chevron-right arrow-icon"></i>
+            </a>
+
+            <a href="#" onclick="showSection('assessment')" class="sidebar-menu-card" data-bs-dismiss="offcanvas">
+                <div class="d-flex align-items-center">
+                    <span class="menu-icon"><i class="bi bi-clipboard2-check-fill"></i></span>
+                    <span>Mental Assessments</span>
+                </div>
+                <i class="bi bi-chevron-right arrow-icon"></i>
+            </a>
+
+            <a href="#" onclick="showSection('chat')" class="sidebar-menu-card" data-bs-dismiss="offcanvas">
+                <div class="d-flex align-items-center">
+                    <span class="menu-icon"><i class="bi bi-robot"></i></span>
+                    <span>AI Wellness Assistant</span>
+                </div>
+                <i class="bi bi-chevron-right arrow-icon"></i>
+            </a>
+
+            <a href="#" onclick="showSection('appointment')" class="sidebar-menu-card" data-bs-dismiss="offcanvas">
+                <div class="d-flex align-items-center">
+                    <span class="menu-icon"><i class="bi bi-calendar-event-fill"></i></span>
+                    <span>Counsellor Sessions</span>
+                </div>
+                <i class="bi bi-chevron-right arrow-icon"></i>
+            </a>
+
+            <a href="#" onclick="showSection('resources')" class="sidebar-menu-card" data-bs-dismiss="offcanvas">
+                <div class="d-flex align-items-center">
+                    <span class="menu-icon"><i class="bi bi-journal-bookmark-fill"></i></span>
+                    <span>Wellness Resources</span>
+                </div>
+                <i class="bi bi-chevron-right arrow-icon"></i>
+            </a>
+
+            <a href="#" onclick="showSection('mood')" class="sidebar-menu-card" data-bs-dismiss="offcanvas">
+                <div class="d-flex align-items-center">
+                    <span class="menu-icon"><i class="bi bi-activity"></i></span>
+                    <span>Daily Mood Tracker</span>
+                </div>
+                <i class="bi bi-chevron-right arrow-icon"></i>
+            </a>
+
+            <hr class="my-3 text-muted opacity-25">
+
+            <a href="{{ url_for('logout') }}" class="sidebar-menu-card text-danger bg-danger-subtle">
+                <div class="d-flex align-items-center">
+                    <span class="menu-icon text-danger"><i class="bi bi-box-arrow-right"></i></span>
+                    <span>Sign Out</span>
+                </div>
+                <i class="bi bi-chevron-right arrow-icon text-danger"></i>
+            </a>
+
+        </div>
+    </div>
+
+    <!-- Main Workspace -->
+    <main>
+
+        <!-- ================= DASHBOARD OVERVIEW ================= -->
+        <section id="dashboard" class="content-section">
+            
+            <!-- Student Unique Hero Banner -->
+            <div class="hero-section">
+                <div class="container" style="max-width: 820px;">
+                    <span class="hero-badge"><i class="bi bi-mortarboard-fill me-1"></i> Student Academic Wellness Workspace</span>
+                    <h1 class="display-6 fw-bold mb-3" style="letter-spacing: -0.5px;">Welcome to Your Personal <span style="color: var(--brand-mint);">Wellness Dashboard</span></h1>
+                    <p class="text-white-50 fs-6 mb-4 px-md-3" style="line-height: 1.6;">
+                        Monitor your evaluation scores, check upcoming counselor sessions, log your daily emotional health, and consult our 24/7 AI mental health assistant.
+                    </p>
+                    <div class="d-flex justify-content-center gap-3">
+                        <a href="{{ url_for('assessment') }}" class="btn btn-mint">Take New Assessment</a>
+                        <a href="{{ url_for('chatbot') }}" class="btn btn-outline-mint">Chat with AI</a>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Overlapping Dashboard Cards Container -->
+            <div class="container dashboard-container px-3 px-md-4" style="max-width: 1280px;">
+                
+                <!-- Quick Metrics Grid -->
+                <div class="row g-3 mb-4">
+                    <div class="col-6 col-md-3">
+                        <div class="card-custom p-4 text-center text-md-start">
+                            <span class="text-muted small text-uppercase fw-semibold d-block mb-1">Assessments</span>
+                            <h3 class="fw-bold mb-0" style="color: var(--brand-dark-teal);">04 Completed</h3>
+                        </div>
+                    </div>
+                    <div class="col-6 col-md-3">
+                        <div class="card-custom p-4 text-center text-md-start">
+                            <span class="text-muted small text-uppercase fw-semibold d-block mb-1">Clinical Status</span>
+                            <h3 class="fw-bold text-success mb-0">Minimal Risk</h3>
+                        </div>
+                    </div>
+                    <div class="col-6 col-md-3">
+                        <div class="card-custom p-4 text-center text-md-start">
+                            <span class="text-muted small text-uppercase fw-semibold d-block mb-1">Next Session</span>
+                            <h3 class="fw-bold mb-0" style="color: var(--brand-dark-teal);">Tomorrow</h3>
+                        </div>
+                    </div>
+                    <div class="col-6 col-md-3">
+                        <div class="card-custom p-4 text-center text-md-start">
+                            <span class="text-muted small text-uppercase fw-semibold d-block mb-1">Weekly Mood</span>
+                            <h3 class="fw-bold mb-0" style="color: var(--brand-dark-teal);">Stable</h3>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Main Content Row -->
+                <div class="row g-4">
+                    <div class="col-lg-8">
+                        <div class="card-custom p-4">
+                            <div class="d-flex justify-content-between align-items-center mb-3">
+                                <h5 class="fw-bold mb-0" style="color: var(--brand-dark-teal);">Recent Assessment Records</h5>
+                                <a href="#" onclick="showSection('assessment')" class="text-decoration-none small fw-bold" style="color: var(--brand-mint-hover);">View All</a>
+                            </div>
+                            <div class="table-responsive">
+                                <table class="table table-custom border align-middle mb-0">
+                                    <thead>
+                                        <tr>
+                                            <th>Date Recorded</th>
+                                            <th>Evaluation Module</th>
+                                            <th>Score</th>
+                                            <th>Risk Level</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <tr>
+                                            <td class="text-muted">24 Jul 2026</td>
+                                            <td class="fw-bold">General Anxiety Evaluation (GAD-7)</td>
+                                            <td>04 / 21</td>
+                                            <td><span class="badge bg-success-subtle text-success px-3 py-2 rounded-pill">Minimal Risk</span></td>
+                                        </tr>
+                                        <tr>
+                                            <td class="text-muted">10 Jun 2026</td>
+                                            <td class="fw-bold">Stress Evaluation Scale</td>
+                                            <td>11 / 40</td>
+                                            <td><span class="badge bg-info-subtle text-info px-3 py-2 rounded-pill">Moderate</span></td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="col-lg-4">
+                        <div class="card-custom p-4 mb-4">
+                            <h6 class="fw-bold mb-2" style="color: var(--brand-dark-teal);">MindCare Support AI</h6>
+                            <p class="text-muted small mb-3">Need instant guidance, active listening, or stress-relief exercises?</p>
+                            <a href="{{ url_for('chatbot') }}" class="btn btn-mint w-100 py-2">Open AI Chat Window</a>
+                        </div>
+
+                        <div class="card-custom p-4">
+                            <h6 class="fw-bold mb-2" style="color: var(--brand-dark-teal);">Upcoming Consultation</h6>
+                            <div class="p-3 bg-light rounded-3 border mb-3">
+                                <div class="fw-bold text-dark">Dr. Sarah Jenkins</div>
+                                <small class="text-muted d-block mb-1">Clinical Psychologist</small>
+                                <span class="badge" style="background-color: var(--brand-dark-teal);">Tomorrow at 02:00 PM</span>
+                            </div>
+                            <a href="#" onclick="showSection('appointment')" class="btn btn-outline-secondary border w-100 btn-sm">Manage Appointments</a>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+        </section>
+
+        <!-- ================= PROFILE ================= -->
+        <section id="profile" class="content-section" style="display:none;">
+            <div class="container py-5" style="max-width: 1280px;">
+                <div class="card-custom p-4">
+                    <h5 class="fw-bold mb-4" style="color: var(--brand-dark-teal);">My Student Profile Details</h5>
+                    <table class="table table-borderless align-middle mb-0">
+                        <tbody>
+                            <tr>
+                                <th width="20%" class="text-muted">Username</th>
+                                <td class="fw-bold">{{ session.get('username', 'Student') }}</td>
+                            </tr>
+                            <tr>
+                                <th class="text-muted">Email Address</th>
+                                <td class="fw-bold">{{ session.get('email', 'student@mindcare.com') }}</td>
+                            </tr>
+                            <tr>
+                                <th class="text-muted">Academic Class</th>
+                                <td class="fw-bold">{{ student.class if student else 'N/A' }}</td>
+                            </tr>
+                            <tr>
+                                <th class="text-muted">Stream / Program</th>
+                                <td class="fw-bold">{{ student.stream if student else 'N/A' }}</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </section>
+
+        <!-- ================= ASSESSMENTS ================= -->
+        <section id="assessment" class="content-section" style="display:none;">
+            <div class="container py-5" style="max-width: 1280px;">
+                <div class="card-custom p-4">
+                    <div class="d-flex justify-content-between align-items-center mb-3">
+                        <h5 class="fw-bold mb-0" style="color: var(--brand-dark-teal);">Assessment History & Reports</h5>
+                        <a href="{{ url_for('assessment') }}" class="btn btn-mint btn-sm">Take New Assessment</a>
+                    </div>
+                    <table class="table table-custom border align-middle mb-0">
+                        <thead>
+                            <tr>
+                                <th>Date</th>
+                                <th>Assessment Type</th>
+                                <th>Score</th>
+                                <th>Status</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td colspan="4" class="text-center text-muted py-4">No new records found.</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </section>
+
+        <!-- ================= AI CHAT ================= -->
+        <section id="chat" class="content-section" style="display:none;">
+            <div class="container py-5" style="max-width: 1280px;">
+                <div class="card-custom p-5 text-center">
+                    <h3 class="fw-bold mb-2" style="color: var(--brand-dark-teal);">MindCare AI Support Companion</h3>
+                    <p class="text-muted max-w-md mx-auto mb-4" style="max-width: 500px;">
+                        Connect with our 24/7 AI companion for mindfulness exercises, academic stress guidance, and coping strategies.
+                    </p>
+                    <a href="{{ url_for('chatbot') }}" class="btn btn-mint px-4 py-2">Start AI Conversation</a>
+                </div>
+            </div>
+        </section>
+
+        <!-- ================= APPOINTMENTS ================= -->
+        <section id="appointment" class="content-section" style="display:none;">
+            <div class="container py-5" style="max-width: 1280px;">
+                <div class="card-custom p-4">
+                    <div class="d-flex justify-content-between align-items-center mb-3">
+                        <h5 class="fw-bold mb-0" style="color: var(--brand-dark-teal);">Counselor Appointment Portal</h5>
+                        <a href="{{ url_for('appointment') }}" class="btn btn-mint btn-sm">Schedule Appointment</a>
+                    </div>
+                    <table class="table table-custom border align-middle mb-0">
+                        <thead>
+                            <tr>
+                                <th>Date</th>
+                                <th>Time</th>
+                                <th>Counsellor</th>
+                                <th>Status</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td colspan="4" class="text-center text-muted py-4">No active appointments found.</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </section>
+
+        <!-- ================= RESOURCES ================= -->
+        <section id="resources" class="content-section" style="display:none;">
+            <div class="container py-5" style="max-width: 1280px;">
+                <div class="card-custom p-4">
+                    <h5 class="fw-bold mb-3" style="color: var(--brand-dark-teal);">Student Wellness Resource Library</h5>
+                    <a href="{{ url_for('resources') }}" class="btn btn-mint btn-sm">Browse Resources</a>
+                </div>
+            </div>
+        </section>
+
+        <!-- ================= MOOD TRACKER ================= -->
+        <section id="mood" class="content-section" style="display:none;">
+            <div class="container py-5" style="max-width: 1280px;">
+                <div class="card-custom p-4">
+                    <h5 class="fw-bold mb-3" style="color: var(--brand-dark-teal);">Daily Emotional Health Log</h5>
+                    <div class="row g-3 mb-4">
+                        <div class="col"><div class="mood-pill" onclick="selectMood(this)">Great</div></div>
+                        <div class="col"><div class="mood-pill" onclick="selectMood(this)">Good</div></div>
+                        <div class="col"><div class="mood-pill" onclick="selectMood(this)">Neutral</div></div>
+                        <div class="col"><div class="mood-pill" onclick="selectMood(this)">Low</div></div>
+                        <div class="col"><div class="mood-pill" onclick="selectMood(this)">Stressed</div></div>
+                    </div>
+                    <button class="btn btn-mint btn-sm px-4">Save Entry</button>
+                </div>
+            </div>
+        </section>
+
+    </main>
+
+    <!-- Bootstrap 5 JS Bundle -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+
+    <script>
+        /* Dynamic Section Switcher Script */
+        function showSection(sectionId) {
+            const sections = document.querySelectorAll(".content-section");
+            sections.forEach(s => s.style.display = "none");
+
+            const targetSection = document.getElementById(sectionId);
+            if (targetSection) {
+                targetSection.style.display = "block";
+            }
+        }
+
+        /* Interactive Mood Selector */
+        function selectMood(element) {
+            document.querySelectorAll('.mood-pill').forEach(p => p.classList.remove('active'));
+            element.classList.add('active');
+        }
+    </script>
+</body>
+
+</html>

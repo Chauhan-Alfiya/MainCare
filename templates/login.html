@@ -37,12 +37,10 @@
             <h4>Digital Mental Health Platform</h4>
 
             <p>
-
                 A secure platform designed to help students improve
                 their mental well-being through AI assistance,
                 psychological assessment, counselling support,
                 and wellness resources.
-
             </p>
 
             <div class="feature-box">
@@ -72,26 +70,39 @@
     <div class="col-lg-6 d-flex align-items-center justify-content-center">
 
         <div class="login-card">
-            
 
-            <h2 class="text-center">Welcome MindCare</h2><br>
+            <h2 class="text-center">Welcome MindCare</h2>
 
-            <form action="#" method="POST">
+            <br>
+
+            <!-- Flash Message -->
+            {% with messages = get_flashed_messages() %}
+            {% if messages %}
+            <div class="alert alert-danger text-center">
+                {{ messages[0] }}
+            </div>
+            {% endif %}
+            {% endwith %}
+
+            <form action="{{ url_for('login') }}" method="POST">
+
+                <!-- Username -->
 
                 <div class="mb-3">
 
                     <label class="form-label">
-                        User Name
+                        Username
                     </label>
 
                     <div class="input-group">
 
                         <span class="input-group-text">
-                            <i class="bi bi-envelope-fill"></i>
+                            <i class="bi bi-person-fill"></i>
                         </span>
 
                         <input
-                            type="name"
+                            type="text"
+                            name="username"
                             class="form-control"
                             placeholder="Enter your Username"
                             required>
@@ -99,6 +110,8 @@
                     </div>
 
                 </div>
+
+                <!-- Password -->
 
                 <div class="mb-3">
 
@@ -114,6 +127,7 @@
 
                         <input
                             type="password"
+                            name="password"
                             class="form-control"
                             placeholder="Enter your password"
                             required>
@@ -128,28 +142,23 @@
 
                         <input
                         class="form-check-input"
-                        type="checkbox">
+                        type="checkbox"
+                        id="remember">
 
-                        <label class="form-check-label">
-
+                        <label class="form-check-label" for="remember">
                             Remember Me
-
                         </label>
 
                     </div>
 
                     <a href="#" class="forgot-link">
-
                         Forgot Password?
-
                     </a>
 
                 </div>
 
-                <button class="btn btn-login-page w-100">
-
+                <button type="submit" class="btn btn-login-page w-100">
                     Login
-
                 </button>
 
             </form>
@@ -161,9 +170,7 @@
                 Don't have an account?
 
                 <a href="{{ url_for('register') }}">
-
                     Register
-
                 </a>
 
             </p>
@@ -171,9 +178,7 @@
             <div class="text-center mt-3">
 
                 <a href="{{ url_for('home') }}">
-
                     ← Back to Home
-
                 </a>
 
             </div>

@@ -1,0 +1,76 @@
+<!-- ================= COMMON FOOTER ================= -->
+<footer class="footer-section">
+    <div class="container" style="max-width: 1280px;">
+        <div class="row g-4 mb-4">
+            <!-- Brand Info -->
+            <div class="col-lg-5 col-md-6">
+                <div class="d-flex align-items-center gap-2 mb-3">
+                    <img src="{{ url_for('static', filename='images/logo.png') }}" width="34" alt="MindCare Logo">
+                    <span class="fw-bold fs-5 text-white" style="letter-spacing: -0.5px;">Mind<span style="color: #2dd4bf;">Care</span></span>
+                </div>
+                <p class="text-white-50 small mb-3" style="max-width: 400px; line-height: 1.6;">
+                    An AI-powered Digital Mental Health & Psychological Support System developed for higher education students to manage wellness, track mood, and access counseling support.
+                </p>
+                <div class="small text-white-50">
+                    <i class="bi bi-shield-check me-1 text-teal"></i> Confidential & Secure Student Portal
+                </div>
+            </div>
+
+            <!-- Quick Links -->
+            <div class="col-lg-3 col-md-6">
+                <h6 class="fw-bold text-white mb-3 text-uppercase" style="font-size: 0.8rem; letter-spacing: 0.05em;">Quick Navigation</h6>
+                <ul class="list-unstyled footer-links m-0 p-0">
+                    <li class="mb-2"><a href="#" onclick="showSection('dashboard')">Dashboard Overview</a></li>
+                    <li class="mb-2"><a href="#" onclick="showSection('assessment')">Mental Health Assessment</a></li>
+                    <li class="mb-2"><a href="#" onclick="showSection('chat')">AI Wellness Support</a></li>
+                    <li class="mb-2"><a href="#" onclick="showSection('appointment')">Book Appointment</a></li>
+                </ul>
+            </div>
+
+            <!-- Portal Services -->
+            <div class="col-lg-4 col-md-6">
+                <h6 class="fw-bold text-white mb-3 text-uppercase" style="font-size: 0.8rem; letter-spacing: 0.05em;">Student Help & Safety</h6>
+                <p class="text-white-50 small mb-2">If you or someone you know is in immediate crisis, please reach out to campus emergency helpline or local healthcare support.</p>
+                <div class="p-3 rounded-3" style="background: rgba(255, 255, 255, 0.05); border: 1px solid rgba(255, 255, 255, 0.1);">
+                    <div class="text-white small fw-bold"><i class="bi bi-telephone-fill me-2" style="color: #2dd4bf;"></i>Campus Wellness Support</div>
+                    <small class="text-white-50">Available during college hours</small>
+                </div>
+            </div>
+        </div>
+
+        <hr style="border-color: rgba(255, 255, 255, 0.1);" class="my-4">
+
+        <div class="d-flex flex-column flex-md-row justify-content-between align-items-center small text-white-50 gap-2">
+            <div>
+                &copy; MindCare Support System. All rights reserved.
+            </div>
+            <div class="d-flex gap-3">
+                <a href="#" class="text-white-50 text-decoration-none">Privacy Policy</a>
+                <span>&bull;</span>
+                <a href="#" class="text-white-50 text-decoration-none">Terms of Service</a>
+            </div>
+        </div>
+    </div>
+</footer>
+
+<style>
+    /* Footer Styling */
+    .footer-section {
+        background-color: #06232d;
+        color: #ffffff;
+        padding: 50px 0 25px 0;
+        margin-top: 60px;
+        border-top: 1px solid rgba(255, 255, 255, 0.08);
+    }
+
+    .footer-links a {
+        color: rgba(255, 255, 255, 0.7);
+        text-decoration: none;
+        font-size: 0.9rem;
+        transition: color 0.2s ease;
+    }
+
+    .footer-links a:hover {
+        color: #2dd4bf;
+    }
+</style>

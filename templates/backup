@@ -1,0 +1,539 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+
+<title>Student Dashboard | MindCare</title>
+
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+
+<link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css" rel="stylesheet">
+
+<style>
+
+body{
+    background:#f4f8fb;
+    font-family:'Poppins',sans-serif;
+}
+
+.sidebar{
+    position:fixed;
+    left:0;
+    top:0;
+    width:260px;
+    height:100vh;
+    background:#0B1F3A;
+    color:#fff;
+    padding:25px;
+}
+
+.sidebar img{
+    width:60px;
+}
+
+.sidebar h3{
+    margin-top:10px;
+    margin-bottom:35px;
+    font-weight:700;
+}
+
+.sidebar a{
+    display:block;
+    color:white;
+    text-decoration:none;
+    padding:12px;
+    margin-bottom:8px;
+    border-radius:10px;
+    transition:.3s;
+}
+
+.sidebar a:hover{
+    background:#14B8A6;
+}
+
+.main-content{
+    margin-left:270px;
+    padding:30px;
+}
+
+.topbar{
+    background:white;
+    padding:18px 25px;
+    border-radius:15px;
+    box-shadow:0 3px 10px rgba(0,0,0,.08);
+    margin-bottom:30px;
+}
+
+.card-box{
+    background:white;
+    border-radius:15px;
+    padding:25px;
+    box-shadow:0 3px 10px rgba(0,0,0,.08);
+    text-align:center;
+}
+
+.card-box i{
+    font-size:40px;
+    color:#0E7490;
+}
+
+.card-box h3{
+    margin-top:15px;
+    font-size:18px;
+}
+
+.card-box p{
+    color:gray;
+}
+
+</style>
+
+</head>
+
+<body>
+
+<!-- Sidebar -->
+
+<div class="sidebar">
+
+<div class="text-center">
+
+<img src="{{ url_for('static', filename='images/logo.png') }}">
+
+<h3>MindCare</h3>
+
+</div>
+
+<a href="#">
+<i class="bi bi-house-door-fill"></i>
+Dashboard
+</a>
+
+<a href="#">
+<i class="bi bi-person-circle"></i>
+My Profile
+</a>
+
+<a href="#">
+<i class="bi bi-clipboard2-pulse-fill"></i>
+Mental Assessment
+</a>
+
+<a href="#">
+<i class="bi bi-robot"></i>
+AI Chat Support
+</a>
+
+<a href="#">
+<i class="bi bi-calendar-check-fill"></i>
+Book Appointment
+</a>
+
+<a href="#">
+<i class="bi bi-journal-bookmark-fill"></i>
+Wellness Resources
+</a>
+
+<a href="#">
+<i class="bi bi-emoji-smile-fill"></i>
+Mood Tracker
+</a>
+
+<a href="{{ url_for('logout') }}">
+<i class="bi bi-box-arrow-right"></i>
+Logout
+</a>
+
+</div>
+
+<!-- Main Content -->
+
+<div class="main-content">
+
+<div class="topbar d-flex justify-content-between align-items-center">
+
+<div>
+
+<h3>
+
+Welcome,
+{{ session['username'] }}
+
+</h3>
+
+<p class="text-muted">
+
+Student Dashboard
+
+</p>
+
+</div>
+
+<div>
+
+<span class="badge bg-success fs-6">
+
+Student
+
+</span>
+
+</div>
+
+</div>
+
+<div class="row g-4">
+
+<div class="col-md-4">
+
+<div class="card-box">
+
+<i class="bi bi-clipboard2-heart-fill"></i>
+
+<h3>Assessment</h3>
+
+<p>
+
+Take your mental health assessment.
+
+</p>
+
+<a href="{{ url_for('assessment') }}" class="btn btn-primary">
+
+Start
+
+</a>
+
+</div>
+
+</div>
+
+<div class="col-md-4">
+
+<div class="card-box">
+
+<i class="bi bi-robot"></i>
+
+<h3>AI Chat</h3>
+
+<p>
+
+Talk with AI anytime.
+
+</p>
+
+<a href="{{ url_for('chatbot') }}" class="btn btn-primary">
+
+Open
+
+</a>
+
+</div>
+
+</div>
+<div class="col-md-4">
+
+    <div class="card-box">
+
+        <i class="bi bi-calendar-check-fill"></i>
+
+        <h3>Appointment</h3>
+
+        <p>
+
+            Book counselling appointments.
+
+        </p>
+
+        <a href="{{ url_for('appointment') }}" class="btn btn-primary">
+
+            Book Now
+
+        </a>
+
+    </div>
+
+</div>
+
+<div class="col-md-4">
+
+    <div class="card-box">
+
+        <i class="bi bi-book-half"></i>
+
+        <h3>Resources</h3>
+
+        <p>
+
+            Explore wellness resources.
+
+        </p>
+
+        <a href="{{ url_for('resources') }}" class="btn btn-primary">
+
+            View
+
+        </a>
+
+    </div>
+
+</div>
+
+<div class="col-md-4">
+
+    <div class="card-box">
+
+        <i class="bi bi-emoji-smile-fill"></i>
+
+        <h3>Mood Tracker</h3>
+
+        <p>
+
+            Record your daily mood.
+
+        </p>
+
+        <a href="#" class="btn btn-primary">
+
+            Update
+
+        </a>
+
+    </div>
+
+</div>
+
+<div class="col-md-12">
+
+    <div class="card-box text-start">
+
+        <h4 class="mb-3">
+
+            <i class="bi bi-clock-history"></i>
+
+            Recent Activity
+
+        </h4>
+
+        <table class="table table-hover align-middle">
+
+            <thead>
+
+                <tr>
+
+                    <th>Date</th>
+
+                    <th>Activity</th>
+
+                    <th>Status</th>
+
+                </tr>
+
+            </thead>
+
+            <tbody>
+
+                <tr>
+
+                    <td>No Records</td>
+
+                    <td>No activity available</td>
+
+                    <td>
+
+                        <span class="badge bg-secondary">
+
+                            Pending
+
+                        </span>
+
+                    </td>
+
+                </tr>
+
+            </tbody>
+
+        </table>
+
+    </div>
+
+</div>
+
+<div class="col-md-6">
+
+    <div class="card-box text-start">
+
+        <h4>
+
+            My Upcoming Appointment
+
+        </h4>
+
+        <hr>
+
+        <p class="text-muted">
+
+            No appointments booked yet.
+
+        </p>
+
+    </div>
+
+</div>
+
+<div class="col-md-6">
+
+    <div class="card-box text-start">
+
+        <h4>
+
+            Latest Assessment
+
+        </h4>
+
+        <hr>
+
+        <p class="text-muted">
+
+            No assessment available.
+
+        </p>
+
+    </div>
+
+</div>
+        </div>
+
+        <!-- Bottom Section -->
+
+        <div class="row mt-4">
+
+            <!-- Student Information -->
+
+            <div class="col-lg-6">
+
+                <div class="card shadow-sm border-0 rounded-4">
+
+                    <div class="card-header bg-white">
+
+                        <h5 class="mb-0">
+
+                            <i class="bi bi-person-vcard-fill text-primary"></i>
+
+                            Student Information
+
+                        </h5>
+
+                    </div>
+
+                    <div class="card-body">
+
+                        <table class="table table-borderless">
+
+                            <tr>
+
+                                <th width="35%">Username</th>
+
+                                <td>{{ session['username'] }}</td>
+
+                            </tr>
+
+                            <tr>
+
+                                <th>Role</th>
+
+                                <td>Student</td>
+
+                            </tr>
+
+                            <tr>
+
+                                <th>Status</th>
+
+                                <td>
+
+                                    <span class="badge bg-success">
+
+                                        Active
+
+                                    </span>
+
+                                </td>
+
+                            </tr>
+
+                        </table>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+            <!-- Wellness Tips -->
+
+            <div class="col-lg-6">
+
+                <div class="card shadow-sm border-0 rounded-4">
+
+                    <div class="card-header bg-white">
+
+                        <h5 class="mb-0">
+
+                            <i class="bi bi-heart-pulse-fill text-danger"></i>
+
+                            Daily Wellness Tips
+
+                        </h5>
+
+                    </div>
+
+                    <div class="card-body">
+
+                        <ul class="list-group list-group-flush">
+
+                            <li class="list-group-item">
+
+                                😊 Practice deep breathing for 5 minutes.
+
+                            </li>
+
+                            <li class="list-group-item">
+
+                                💧 Drink enough water today.
+
+                            </li>
+
+                            <li class="list-group-item">
+
+                                🚶 Take a short walk after study.
+
+                            </li>
+
+                            <li class="list-group-item">
+
+                                😴 Sleep at least 7–8 hours.
+
+                            </li>
+
+                        </ul>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+        </div>
+
+    </div>
+
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+
+</body>
+
+</html>

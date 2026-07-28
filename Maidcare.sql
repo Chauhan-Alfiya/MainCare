@@ -2,16 +2,10 @@ SET SQL_MODE = "NO_AUTO_VALUE_ON_ZERO";
 START TRANSACTION;
 SET time_zone = "+00:00";
 
--- ======================================
--- CREATE DATABASE
--- ======================================
 
-CREATE DATABASE IF NOT EXISTS mindcare;
-USE mindcare;
 
--- ======================================
+
 -- ROLES TABLE
--- ======================================
 
 CREATE TABLE roles (
 
@@ -26,59 +20,83 @@ VALUES
 ('STUDENT'),
 ('COUNSELLOR');
 
--- ======================================
 -- USERS TABLE
--- ======================================
 
 CREATE TABLE users (
 
     user_id INT AUTO_INCREMENT PRIMARY KEY,
+
     username VARCHAR(100) NOT NULL,
+
     email VARCHAR(150) NOT NULL UNIQUE,
+
     password VARCHAR(255) NOT NULL,
+
     role_id INT NOT NULL,
-    class ENUM('11th','12th') NOT NULL,
-    stream ENUM(
-        'Science',
-        'Commerce',
-        'Arts'
-    ) NOT NULL,
+
     is_active BOOLEAN DEFAULT TRUE,
+
     is_deleted BOOLEAN DEFAULT FALSE,
+
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+
     last_activity_date DATETIME DEFAULT NULL,
+
     last_password_change DATETIME DEFAULT NULL,
+
     deleted_at DATETIME DEFAULT NULL,
+
     reset_token VARCHAR(255) DEFAULT NULL,
+
     reset_expires DATETIME DEFAULT NULL,
+
     otp_code VARCHAR(10) DEFAULT NULL,
+
     otp_expires DATETIME DEFAULT NULL,
+
+    CONSTRAINT fk_user_role
     FOREIGN KEY(role_id)
     REFERENCES roles(role_id)
 
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
--- ======================================
 -- DEFAULT ADMIN
--- ======================================
 
 INSERT INTO users
 (username,email,password,role_id)
-
 VALUES
 (
 'Admin',
 'admin@mindcare.com',
 'admin123',
-(SELECT role_id FROM roles WHERE role = 'ADMIN')
-
+1
 );
 
--- ======================================
--- ASSESSMENT TABLE
--- ======================================
+-- STUDENT DETAILS
 
-CREATE TABLE assessments (
+CREATE TABLE student_details(
+
+    student_id INT AUTO_INCREMENT PRIMARY KEY,
+
+    user_id INT NOT NULL UNIQUE,
+
+    class ENUM('11th','12th') NOT NULL,
+
+    stream ENUM(
+        'Science',
+        'Commerce',
+        'Arts'
+    ) NOT NULL,
+
+    FOREIGN KEY(user_id)
+    REFERENCES users(user_id)
+    ON DELETE CASCADE
+
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+-- ASSESSMENTS
+
+CREATE TABLE assessments(
 
     assessment_id INT AUTO_INCREMENT PRIMARY KEY,
 
@@ -103,11 +121,9 @@ CREATE TABLE assessments (
 
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
--- ======================================
--- AI CHAT SUPPORT
--- ======================================
+-- CHAT SUPPORT
 
-CREATE TABLE chat_support (
+CREATE TABLE chat_support(
 
     chat_id INT AUTO_INCREMENT PRIMARY KEY,
 
@@ -125,11 +141,9 @@ CREATE TABLE chat_support (
 
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
--- ======================================
 -- APPOINTMENTS
--- ======================================
 
-CREATE TABLE appointments (
+CREATE TABLE appointments(
 
     appointment_id INT AUTO_INCREMENT PRIMARY KEY,
 
@@ -162,11 +176,9 @@ CREATE TABLE appointments (
 
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
--- ======================================
 -- WELLNESS RESOURCES
--- ======================================
 
-CREATE TABLE wellness_resources (
+CREATE TABLE wellness_resources(
 
     resource_id INT AUTO_INCREMENT PRIMARY KEY,
 
@@ -176,17 +188,17 @@ CREATE TABLE wellness_resources (
 
     description TEXT,
 
+    language VARCHAR(50),
+
     file_path VARCHAR(255),
 
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
--- ======================================
 -- WELLNESS TRACKER
--- ======================================
 
-CREATE TABLE wellness_tracker (
+CREATE TABLE wellness_tracker(
 
     tracker_id INT AUTO_INCREMENT PRIMARY KEY,
 
@@ -199,6 +211,10 @@ CREATE TABLE wellness_tracker (
         'Stressed',
         'Anxious'
     ),
+
+    stress_level INT,
+
+    sleep_hours DECIMAL(3,1),
 
     note TEXT,
 
