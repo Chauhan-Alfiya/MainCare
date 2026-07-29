@@ -25,35 +25,20 @@ VALUES
 CREATE TABLE users (
 
     user_id INT AUTO_INCREMENT PRIMARY KEY,
-
     username VARCHAR(100) NOT NULL,
-
     email VARCHAR(150) NOT NULL UNIQUE,
-
     password VARCHAR(255) NOT NULL,
-
     role_id INT NOT NULL,
-
     is_active BOOLEAN DEFAULT TRUE,
-
     is_deleted BOOLEAN DEFAULT FALSE,
-
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-
     last_activity_date DATETIME DEFAULT NULL,
-
     last_password_change DATETIME DEFAULT NULL,
-
     deleted_at DATETIME DEFAULT NULL,
-
     reset_token VARCHAR(255) DEFAULT NULL,
-
     reset_expires DATETIME DEFAULT NULL,
-
     otp_code VARCHAR(10) DEFAULT NULL,
-
     otp_expires DATETIME DEFAULT NULL,
-
     CONSTRAINT fk_user_role
     FOREIGN KEY(role_id)
     REFERENCES roles(role_id)
@@ -75,19 +60,14 @@ VALUES
 -- STUDENT DETAILS
 
 CREATE TABLE student_details(
-
     student_id INT AUTO_INCREMENT PRIMARY KEY,
-
     user_id INT NOT NULL UNIQUE,
-
     class ENUM('11th','12th') NOT NULL,
-
     stream ENUM(
         'Science',
         'Commerce',
         'Arts'
     ) NOT NULL,
-
     FOREIGN KEY(user_id)
     REFERENCES users(user_id)
     ON DELETE CASCADE
@@ -97,24 +77,16 @@ CREATE TABLE student_details(
 -- ASSESSMENTS
 
 CREATE TABLE assessments(
-
     assessment_id INT AUTO_INCREMENT PRIMARY KEY,
-
     student_id INT NOT NULL,
-
     assessment_type ENUM(
         'PHQ-9',
         'GAD-7'
     ) NOT NULL,
-
     score INT NOT NULL,
-
     risk_level VARCHAR(50),
-
     recommendation TEXT,
-
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-
     FOREIGN KEY(student_id)
     REFERENCES users(user_id)
     ON DELETE CASCADE
@@ -124,17 +96,11 @@ CREATE TABLE assessments(
 -- CHAT SUPPORT
 
 CREATE TABLE chat_support(
-
     chat_id INT AUTO_INCREMENT PRIMARY KEY,
-
     student_id INT NOT NULL,
-
     message TEXT NOT NULL,
-
     bot_reply TEXT,
-
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-
     FOREIGN KEY(student_id)
     REFERENCES users(user_id)
     ON DELETE CASCADE
@@ -144,19 +110,12 @@ CREATE TABLE chat_support(
 -- APPOINTMENTS
 
 CREATE TABLE appointments(
-
     appointment_id INT AUTO_INCREMENT PRIMARY KEY,
-
     student_id INT NOT NULL,
-
     counsellor_id INT NOT NULL,
-
     appointment_date DATE NOT NULL,
-
     appointment_time TIME NOT NULL,
-
     reason TEXT,
-
     status ENUM(
         'Pending',
         'Approved',
@@ -165,7 +124,6 @@ CREATE TABLE appointments(
     ) DEFAULT 'Pending',
 
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-
     FOREIGN KEY(student_id)
     REFERENCES users(user_id)
     ON DELETE CASCADE,
@@ -179,31 +137,20 @@ CREATE TABLE appointments(
 -- WELLNESS RESOURCES
 
 CREATE TABLE wellness_resources(
-
     resource_id INT AUTO_INCREMENT PRIMARY KEY,
-
     title VARCHAR(200) NOT NULL,
-
     category VARCHAR(100),
-
     description TEXT,
-
     language VARCHAR(50),
-
     file_path VARCHAR(255),
-
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
 -- WELLNESS TRACKER
 
 CREATE TABLE wellness_tracker(
-
     tracker_id INT AUTO_INCREMENT PRIMARY KEY,
-
     student_id INT NOT NULL,
-
     mood ENUM(
         'Happy',
         'Calm',
@@ -211,19 +158,13 @@ CREATE TABLE wellness_tracker(
         'Stressed',
         'Anxious'
     ),
-
     stress_level INT,
-
     sleep_hours DECIMAL(3,1),
-
     note TEXT,
-
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-
     FOREIGN KEY(student_id)
     REFERENCES users(user_id)
     ON DELETE CASCADE
-
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
 COMMIT;

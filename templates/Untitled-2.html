@@ -1,0 +1,1425 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+
+<title>Student Dashboard | MindCare</title>
+
+<!-- Bootstrap -->
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+
+<!-- Bootstrap Icons -->
+<link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css" rel="stylesheet">
+
+<!-- Your CSS -->
+<link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+
+<style>
+
+body{
+    background:#F5F8FC;
+    font-family:'Poppins',sans-serif;
+}
+
+/* Sidebar */
+
+.sidebar{
+
+    position:fixed;
+
+    top:0;
+
+    left:-270px;
+
+    width:270px;
+
+    height:100vh;
+
+    background:#0B1F3A;
+
+    transition:.35s;
+
+    z-index:1050;
+
+    overflow-y:auto;
+
+    box-shadow:5px 0 20px rgba(0,0,0,.15);
+
+}
+
+.sidebar.active{
+
+    left:0;
+
+}
+
+.sidebar-logo{
+
+    text-align:center;
+
+    padding:25px;
+
+    border-bottom:1px solid rgba(255,255,255,.15);
+
+}
+
+.sidebar-logo img{
+
+    width:70px;
+
+}
+
+.sidebar-logo h3{
+
+    color:white;
+
+    margin-top:15px;
+
+    font-weight:700;
+
+}
+
+.sidebar a{
+
+    display:block;
+
+    color:white;
+
+    text-decoration:none;
+
+    padding:16px 28px;
+
+    font-size:15px;
+
+    transition:.3s;
+
+}
+
+.sidebar a:hover{
+
+    background:#14B8A6;
+
+    padding-left:35px;
+
+}
+
+.sidebar a i{
+
+    margin-right:12px;
+
+}
+
+/* Navbar */
+
+.topbar{
+
+    background:white;
+
+    height:75px;
+
+    display:flex;
+
+    justify-content:space-between;
+
+    align-items:center;
+
+    padding:0 30px;
+
+    box-shadow:0 3px 15px rgba(0,0,0,.08);
+
+}
+
+.menu-btn{
+
+    font-size:30px;
+
+    cursor:pointer;
+
+    color:#0B1F3A;
+
+}
+
+.user-box{
+
+    display:flex;
+
+    align-items:center;
+
+    gap:15px;
+
+}
+
+.profile-circle{
+
+    width:45px;
+
+    height:45px;
+
+    border-radius:50%;
+
+    background:#14B8A6;
+
+    color:white;
+
+    display:flex;
+
+    justify-content:center;
+
+    align-items:center;
+
+    font-size:22px;
+
+}
+
+/* Main */
+
+.main-content{
+
+    padding:35px;
+
+}
+
+.content-section{
+
+    display:none;
+
+}
+
+.card-custom{
+
+    border:none;
+
+    border-radius:18px;
+
+    box-shadow:0 5px 18px rgba(0,0,0,.08);
+
+}
+
+</style>
+
+</head>
+
+<body>
+
+<!-- Sidebar -->
+
+<div class="sidebar" id="sidebar">
+
+<div class="sidebar-logo">
+
+<img src="{{ url_for('static', filename='images/logo.png') }}">
+
+<h3>MindCare</h3>
+
+</div>
+
+<a href="#" onclick="showSection('dashboard')">
+<i class="bi bi-house-door-fill"></i>
+Dashboard
+</a>
+
+<a href="#" onclick="showSection('profile')">
+<i class="bi bi-person-fill"></i>
+My Profile
+</a>
+
+<a href="#" onclick="showSection('assessment')">
+<i class="bi bi-clipboard2-pulse-fill"></i>
+Assessment
+</a>
+
+<a href="#" onclick="showSection('chat')">
+<i class="bi bi-robot"></i>
+AI Chat
+</a>
+
+<a href="#" onclick="showSection('appointment')">
+<i class="bi bi-calendar-check-fill"></i>
+Appointment
+</a>
+
+<a href="#" onclick="showSection('resources')">
+<i class="bi bi-book-fill"></i>
+Resources
+</a>
+
+<a href="#" onclick="showSection('mood')">
+<i class="bi bi-emoji-smile-fill"></i>
+Mood Tracker
+</a>
+
+<hr class="text-light">
+
+<a href="{{ url_for('logout') }}">
+
+<i class="bi bi-box-arrow-right"></i>
+
+Logout
+
+</a>
+
+</div>
+
+<!-- Topbar -->
+
+<div class="topbar">
+
+<div class="d-flex align-items-center">
+
+<i class="bi bi-list menu-btn" onclick="toggleSidebar()"></i>
+
+<h4 class="ms-3 fw-bold mb-0">
+
+Student Dashboard
+
+</h4>
+
+</div>
+
+<div class="user-box">
+
+<i class="bi bi-bell fs-4"></i>
+
+<div class="profile-circle">
+
+<i class="bi bi-person-fill"></i>
+
+</div>
+
+<div>
+
+<strong>{{ session['username'] }}</strong>
+
+<br>
+
+<small class="text-muted">
+
+Student
+
+</small>
+
+</div>
+
+</div>
+
+</div>
+
+<!-- Main Content -->
+
+<div class="main-content">
+
+<!-- Dashboard Start -->
+
+<div id="dashboard" class="content-section">\
+    <!-- Welcome Banner -->
+
+<div class="card card-custom border-0 mb-4">
+
+    <div class="card-body p-5">
+
+        <div class="row align-items-center">
+
+            <div class="col-lg-8">
+
+                <h2 class="fw-bold">
+
+                    Welcome Back, {{ session['username'] }} 👋
+
+                </h2>
+
+                <p class="text-muted fs-5 mb-4">
+
+                    Your mental wellness journey starts here.
+                    Track your progress, connect with AI support,
+                    schedule counselling sessions, and stay healthy every day.
+
+                </p>
+
+                <a href="{{ url_for('assessment') }}" class="btn btn-primary px-4">
+
+                    Start Assessment
+
+                </a>
+
+                <a href="{{ url_for('chatbot') }}" class="btn btn-outline-primary ms-2 px-4">
+
+                    AI Chat
+
+                </a>
+
+            </div>
+
+            <div class="col-lg-4 text-center">
+
+                <img src="{{ url_for('static', filename='images/logo.png') }}"
+                     width="180">
+
+            </div>
+
+        </div>
+
+    </div>
+
+</div>
+
+<!-- Dashboard Statistics -->
+
+<div class="row g-4 mb-4">
+
+<div class="col-lg-3 col-md-6">
+
+<div class="card card-custom">
+
+<div class="card-body">
+
+<div class="d-flex justify-content-between">
+
+<div>
+
+<h6 class="text-muted">
+
+Assessments
+
+</h6>
+
+<h2 class="fw-bold">
+
+{{ total_assessments }}
+
+</h2>
+
+</div>
+
+<div>
+
+<i class="bi bi-clipboard2-pulse-fill fs-1 text-primary"></i>
+
+</div>
+
+</div>
+
+</div>
+
+</div>
+
+</div>
+
+<div class="col-lg-3 col-md-6">
+
+<div class="card card-custom">
+
+<div class="card-body">
+
+<div class="d-flex justify-content-between">
+
+<div>
+
+<h6 class="text-muted">
+
+Appointments
+
+</h6>
+
+<h2 class="fw-bold">
+
+{{ total_appointments }}
+
+</h2>
+
+</div>
+
+<div>
+
+<i class="bi bi-calendar-check-fill fs-1 text-success"></i>
+
+</div>
+
+</div>
+
+</div>
+
+</div>
+
+</div>
+
+<div class="col-lg-3 col-md-6">
+
+<div class="card card-custom">
+
+<div class="card-body">
+
+<div class="d-flex justify-content-between">
+
+<div>
+
+<h6 class="text-muted">
+
+Resources
+
+</h6>
+
+<h2 class="fw-bold">
+
+{{ total_resources }}
+
+</h2>
+
+</div>
+
+<div>
+
+<i class="bi bi-book-fill fs-1 text-warning"></i>
+
+</div>
+
+</div>
+
+</div>
+
+</div>
+
+</div>
+
+<div class="col-lg-3 col-md-6">
+
+<div class="card card-custom">
+
+<div class="card-body">
+
+<div class="d-flex justify-content-between">
+
+<div>
+
+<h6 class="text-muted">
+
+Mood Entries
+
+</h6>
+
+<h2 class="fw-bold">
+
+{{ total_moods }}
+
+</h2>
+
+</div>
+
+<div>
+
+<i class="bi bi-emoji-smile-fill fs-1 text-danger"></i>
+
+</div>
+
+</div>
+
+</div>
+
+</div>
+
+</div>
+
+</div>
+
+<!-- Quick Access -->
+
+<div class="card card-custom">
+
+<div class="card-header bg-white">
+
+<h4 class="fw-bold mb-0">
+
+Quick Access
+
+</h4>
+
+</div>
+
+<div class="card-body">
+
+<div class="row text-center g-4">
+
+<div class="col-lg-3">
+
+<a href="{{ url_for('assessment') }}" class="text-decoration-none">
+
+<i class="bi bi-clipboard2-pulse-fill fs-1 text-primary"></i>
+
+<h5 class="mt-3 text-dark">
+
+Assessment
+
+</h5>
+
+</a>
+
+</div>
+
+<div class="col-lg-3">
+
+<a href="{{ url_for('chatbot') }}" class="text-decoration-none">
+
+<i class="bi bi-robot fs-1 text-success"></i>
+
+<h5 class="mt-3 text-dark">
+
+AI Chat
+
+</h5>
+
+</a>
+
+</div>
+
+<div class="col-lg-3">
+
+<a href="{{ url_for('appointment') }}" class="text-decoration-none">
+
+<i class="bi bi-calendar-check-fill fs-1 text-warning"></i>
+
+<h5 class="mt-3 text-dark">
+
+Appointment
+
+</h5>
+
+</a>
+
+</div>
+
+<div class="col-lg-3">
+
+<a href="{{ url_for('resources') }}" class="text-decoration-none">
+
+<i class="bi bi-book-fill fs-1 text-info"></i>
+
+<h5 class="mt-3 text-dark">
+
+Resources
+
+</h5>
+
+</a>
+
+</div>
+
+</div>
+
+</div>
+
+</div>
+<!-- ================= Recent Activity ================= -->
+
+<div class="row mt-4">
+
+    <!-- Recent Activity -->
+
+    <div class="col-lg-8">
+
+        <div class="card card-custom">
+
+            <div class="card-header bg-white">
+
+                <h4 class="fw-bold mb-0">
+
+                    <i class="bi bi-clock-history text-primary"></i>
+
+                    Recent Activity
+
+                </h4>
+
+            </div>
+
+            <div class="card-body">
+
+                <table class="table table-hover align-middle">
+
+                    <thead class="table-light">
+
+                        <tr>
+
+                            <th>Date</th>
+
+                            <th>Activity</th>
+
+                            <th>Status</th>
+
+                        </tr>
+
+                    </thead>
+
+                    <tbody>
+
+                        {% if activities %}
+
+                            {% for activity in activities %}
+
+                            <tr>
+
+                                <td>{{ activity.date }}</td>
+
+                                <td>{{ activity.activity }}</td>
+
+                                <td>
+
+                                    <span class="badge bg-success">
+
+                                        {{ activity.status }}
+
+                                    </span>
+
+                                </td>
+
+                            </tr>
+
+                            {% endfor %}
+
+                        {% else %}
+
+                            <tr>
+
+                                <td colspan="3" class="text-center text-muted">
+
+                                    No recent activity found.
+
+                                </td>
+
+                            </tr>
+
+                        {% endif %}
+
+                    </tbody>
+
+                </table>
+
+            </div>
+
+        </div>
+
+    </div>
+
+    <!-- Upcoming Appointment -->
+
+    <div class="col-lg-4">
+
+        <div class="card card-custom">
+
+            <div class="card-header bg-white">
+
+                <h4 class="fw-bold mb-0">
+
+                    <i class="bi bi-calendar-check-fill text-success"></i>
+
+                    Upcoming Appointment
+
+                </h4>
+
+            </div>
+
+            <div class="card-body">
+
+                {% if appointment %}
+
+                    <h5>{{ appointment.counsellor }}</h5>
+
+                    <p class="mb-1">
+
+                        <strong>Date:</strong>
+
+                        {{ appointment.date }}
+
+                    </p>
+
+                    <p class="mb-3">
+
+                        <strong>Time:</strong>
+
+                        {{ appointment.time }}
+
+                    </p>
+
+                    <span class="badge bg-success">
+
+                        {{ appointment.status }}
+
+                    </span>
+
+                {% else %}
+
+                    <div class="text-center py-3">
+
+                        <i class="bi bi-calendar-x display-5 text-secondary"></i>
+
+                        <p class="mt-3 text-muted">
+
+                            No upcoming appointment.
+
+                        </p>
+
+                    </div>
+
+                {% endif %}
+
+            </div>
+
+        </div>
+
+    </div>
+
+</div>
+
+<!-- ================= Wellness Tips ================= -->
+
+<div class="card card-custom mt-4">
+
+    <div class="card-header bg-white">
+
+        <h4 class="fw-bold mb-0">
+
+            <i class="bi bi-heart-pulse-fill text-danger"></i>
+
+            Daily Wellness Tips
+
+        </h4>
+
+    </div>
+
+    <div class="card-body">
+
+        <div class="row text-center">
+
+            <div class="col-md-3">
+
+                <i class="bi bi-cup-hot-fill text-primary display-6"></i>
+
+                <h6 class="mt-3">
+
+                    Stay Hydrated
+
+                </h6>
+
+                <p class="text-muted">
+
+                    Drink at least 8 glasses of water.
+
+                </p>
+
+            </div>
+
+            <div class="col-md-3">
+
+                <i class="bi bi-moon-stars-fill text-info display-6"></i>
+
+                <h6 class="mt-3">
+
+                    Sleep Well
+
+                </h6>
+
+                <p class="text-muted">
+
+                    Sleep 7–8 hours every night.
+
+                </p>
+
+            </div>
+
+            <div class="col-md-3">
+
+                <i class="bi bi-tree-fill text-success display-6"></i>
+
+                <h6 class="mt-3">
+
+                    Take a Walk
+
+                </h6>
+
+                <p class="text-muted">
+
+                    Spend some time outdoors today.
+
+                </p>
+
+            </div>
+
+            <div class="col-md-3">
+
+                <i class="bi bi-emoji-smile-fill text-warning display-6"></i>
+
+                <h6 class="mt-3">
+
+                    Stay Positive
+
+                </h6>
+
+                <p class="text-muted">
+
+                    Take a few deep breaths and relax.
+
+                </p>
+
+            </div>
+
+        </div>
+
+    </div>
+
+</div>
+<!-- ================= MY PROFILE ================= -->
+
+<div id="profile" class="content-section">
+
+<div class="card card-custom">
+
+<div class="card-header bg-white">
+
+<h4 class="fw-bold mb-0">
+
+<i class="bi bi-person-circle text-primary"></i>
+
+My Profile
+
+</h4>
+
+</div>
+
+<div class="card-body">
+
+<div class="row">
+
+<div class="col-md-3 text-center">
+
+<i class="bi bi-person-circle display-1 text-secondary"></i>
+
+<h5 class="mt-3">
+
+{{ session['username'] }}
+
+</h5>
+
+<span class="badge bg-success">
+
+Student
+
+</span>
+
+</div>
+
+<div class="col-md-9">
+
+<table class="table">
+
+<tr>
+
+<th width="30%">Full Name</th>
+
+<td>{{ student.username }}</td>
+
+</tr>
+
+<tr>
+
+<th>Email</th>
+
+<td>{{ student.email }}</td>
+
+</tr>
+
+<tr>
+
+<th>Class</th>
+
+<td>{{ student.class }}</td>
+
+</tr>
+
+<tr>
+
+<th>Stream</th>
+
+<td>{{ student.stream }}</td>
+
+</tr>
+
+<tr>
+
+<th>Status</th>
+
+<td>
+
+<span class="badge bg-success">
+
+Active
+
+</span>
+
+</td>
+
+</tr>
+
+</table>
+
+<button class="btn btn-primary">
+
+Edit Profile
+
+</button>
+
+<button class="btn btn-outline-secondary ms-2">
+
+Change Password
+
+</button>
+
+</div>
+
+</div>
+
+</div>
+
+</div>
+
+</div>
+
+<!-- ================= ASSESSMENT ================= -->
+
+<div id="assessment" class="content-section">
+
+<div class="card card-custom">
+
+<div class="card-header bg-white">
+
+<h4>
+
+Mental Health Assessments
+
+</h4>
+
+</div>
+
+<div class="card-body">
+
+<a href="{{ url_for('assessment') }}"
+
+class="btn btn-primary mb-3">
+
+Take New Assessment
+
+</a>
+
+<table class="table table-hover">
+
+<thead>
+
+<tr>
+
+<th>Date</th>
+
+<th>Assessment</th>
+
+<th>Score</th>
+
+<th>Status</th>
+
+</tr>
+
+</thead>
+
+<tbody>
+
+{% if assessments %}
+
+{% for item in assessments %}
+
+<tr>
+
+<td>{{ item.date }}</td>
+
+<td>{{ item.type }}</td>
+
+<td>{{ item.score }}</td>
+
+<td>
+
+<span class="badge bg-success">
+
+Completed
+
+</span>
+
+</td>
+
+</tr>
+
+{% endfor %}
+
+{% else %}
+
+<tr>
+
+<td colspan="4"
+
+class="text-center text-muted">
+
+No assessment available.
+
+</td>
+
+</tr>
+
+{% endif %}
+
+</tbody>
+
+</table>
+
+</div>
+
+</div>
+
+</div>
+
+<!-- ================= AI CHAT ================= -->
+
+<div id="chat" class="content-section">
+
+<div class="card card-custom">
+
+<div class="card-body text-center py-5">
+
+<i class="bi bi-robot display-2 text-primary"></i>
+
+<h3 class="mt-4">
+
+MindCare AI Assistant
+
+</h3>
+
+<p class="text-muted">
+
+Talk with AI anytime for mental health guidance.
+
+</p>
+
+<a href="{{ url_for('chatbot') }}"
+
+class="btn btn-primary">
+
+Start Chat
+
+</a>
+
+</div>
+
+</div>
+
+</div>
+
+<!-- ================= APPOINTMENT ================= -->
+
+<div id="appointment" class="content-section">
+
+<div class="card card-custom">
+
+<div class="card-header bg-white">
+
+<h4>
+
+Counselling Appointments
+
+</h4>
+
+</div>
+
+<div class="card-body">
+
+<a href="{{ url_for('appointment') }}"
+
+class="btn btn-success mb-3">
+
+Book Appointment
+
+</a>
+
+<table class="table table-hover">
+
+<thead>
+
+<tr>
+
+<th>Date</th>
+
+<th>Time</th>
+
+<th>Counsellor</th>
+
+<th>Status</th>
+
+</tr>
+
+</thead>
+
+<tbody>
+
+{% if appointments %}
+
+{% for app in appointments %}
+
+<tr>
+
+<td>{{ app.date }}</td>
+
+<td>{{ app.time }}</td>
+
+<td>{{ app.counsellor }}</td>
+
+<td>
+
+<span class="badge bg-success">
+
+{{ app.status }}
+
+</span>
+
+</td>
+
+</tr>
+
+{% endfor %}
+
+{% else %}
+
+<tr>
+
+<td colspan="4"
+
+class="text-center text-muted">
+
+No appointments found.
+
+</td>
+
+</tr>
+
+{% endif %}
+
+</tbody>
+
+</table>
+
+</div>
+
+</div>
+
+</div>
+
+<!-- ================= RESOURCES ================= -->
+
+<div id="resources" class="content-section">
+
+<div class="card card-custom">
+
+<div class="card-header bg-white">
+
+<h4>
+
+Mental Wellness Resources
+
+</h4>
+
+</div>
+
+<div class="card-body">
+
+<div class="row">
+
+{% if resources %}
+
+{% for resource in resources %}
+
+<div class="col-md-4 mb-3">
+
+<div class="card shadow-sm h-100">
+
+<div class="card-body">
+
+<h5>{{ resource.title }}</h5>
+
+<p>
+
+{{ resource.description }}
+
+</p>
+
+<a href="#"
+
+class="btn btn-outline-primary btn-sm">
+
+View
+
+</a>
+
+</div>
+
+</div>
+
+</div>
+
+{% endfor %}
+
+{% else %}
+
+<div class="text-center text-muted">
+
+No resources available.
+
+</div>
+
+{% endif %}
+
+</div>
+
+</div>
+
+</div>
+
+</div>
+
+<!-- ================= MOOD TRACKER ================= -->
+
+<div id="mood" class="content-section">
+
+<div class="card card-custom">
+
+<div class="card-header bg-white">
+
+<h4>
+
+Daily Mood Tracker
+
+</h4>
+
+</div>
+
+<div class="card-body text-center">
+
+<h5 class="mb-4">
+
+How are you feeling today?
+
+</h5>
+
+<div class="d-flex justify-content-center gap-3">
+
+<button class="btn btn-light fs-2">😁</button>
+
+<button class="btn btn-light fs-2">😊</button>
+
+<button class="btn btn-light fs-2">😐</button>
+
+<button class="btn btn-light fs-2">😔</button>
+
+<button class="btn btn-light fs-2">😢</button>
+
+</div>
+
+<button class="btn btn-primary mt-4">
+
+Save Mood
+
+</button>
+
+</div>
+
+</div>
+
+</div>
+</div>
+<!-- Dashboard Section End -->
+
+</div>
+<!-- Main Content End -->
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+
+<script>
+
+// =============================
+// Sidebar Toggle
+// =============================
+
+function toggleSidebar(){
+
+    document.getElementById("sidebar").classList.toggle("active");
+
+}
+
+// =============================
+// Show Selected Section
+// =============================
+
+function showSection(sectionId){
+
+    // Hide all sections
+
+    let sections = document.querySelectorAll(".content-section");
+
+    sections.forEach(function(section){
+
+        section.style.display="none";
+
+    });
+
+    // Show selected section
+
+    document.getElementById(sectionId).style.display="block";
+
+    // Close Sidebar
+
+    document.getElementById("sidebar").classList.remove("active");
+
+}
+
+// =============================
+// Default Dashboard
+// =============================
+
+window.onload=function(){
+
+    showSection("dashboard");
+
+}
+
+// =============================
+// Close Sidebar when click outside
+// =============================
+
+document.addEventListener("click",function(e){
+
+    let sidebar=document.getElementById("sidebar");
+
+    let menu=document.querySelector(".menu-btn");
+
+    if(
+
+        !sidebar.contains(e.target)
+
+        &&
+
+        !menu.contains(e.target)
+
+    ){
+
+        sidebar.classList.remove("active");
+
+    }
+
+});
+
+</script>
+
+</body>
+
+</html>
