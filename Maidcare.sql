@@ -2,18 +2,12 @@ SET SQL_MODE = "NO_AUTO_VALUE_ON_ZERO";
 START TRANSACTION;
 SET time_zone = "+00:00";
 
-
-
-
+-- mindcare -- 
 -- ROLES TABLE
-
 CREATE TABLE roles (
-
     role_id INT AUTO_INCREMENT PRIMARY KEY,
     role VARCHAR(50) NOT NULL UNIQUE
-
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
-
 INSERT INTO roles(role)
 VALUES
 ('ADMIN'),
@@ -21,10 +15,9 @@ VALUES
 ('COUNSELLOR');
 
 -- USERS TABLE
-
 CREATE TABLE users (
 
-    user_id INT AUTO_INCREMENT PRIMARY KEY,
+    user_id INT AUTO_INCREMENT,
     username VARCHAR(100) NOT NULL,
     email VARCHAR(150) NOT NULL UNIQUE,
     password VARCHAR(255) NOT NULL,
@@ -39,13 +32,10 @@ CREATE TABLE users (
     reset_expires DATETIME DEFAULT NULL,
     otp_code VARCHAR(10) DEFAULT NULL,
     otp_expires DATETIME DEFAULT NULL,
-    CONSTRAINT fk_user_role
+    PRIMARY KEY(user_id),
     FOREIGN KEY(role_id)
     REFERENCES roles(role_id)
-
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
-
--- DEFAULT ADMIN
 
 INSERT INTO users
 (username,email,password,role_id)
@@ -53,32 +43,27 @@ VALUES
 (
 'Admin',
 'admin@mindcare.com',
-'admin123',
-1
+'$2y$10$FYhRXaElfD9aVBXjzkNn.OvXmBL8lhbzsi/UKlrIVfRAJivad27Vi',
+(SELECT role_id FROM roles WHERE role='ADMIN')
 );
 
 -- STUDENT DETAILS
-
 CREATE TABLE student_details(
-    student_id INT AUTO_INCREMENT PRIMARY KEY,
-    user_id INT NOT NULL UNIQUE,
+    user_id INT,
     class ENUM('11th','12th') NOT NULL,
     stream ENUM(
         'Science',
         'Commerce',
         'Arts'
     ) NOT NULL,
-    FOREIGN KEY(user_id)
-    REFERENCES users(user_id)
-    ON DELETE CASCADE
-
+    PRIMARY KEY(user_id),
+    FOREIGN KEY(user_id) REFERENCES users(user_id) ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
 -- ASSESSMENTS
-
 CREATE TABLE assessments(
     assessment_id INT AUTO_INCREMENT PRIMARY KEY,
-    student_id INT NOT NULL,
+    user_id INT NOT NULL,
     assessment_type ENUM(
         'PHQ-9',
         'GAD-7'
@@ -87,21 +72,32 @@ CREATE TABLE assessments(
     risk_level VARCHAR(50),
     recommendation TEXT,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    FOREIGN KEY(student_id)
+    FOREIGN KEY(user_id)
     REFERENCES users(user_id)
     ON DELETE CASCADE
 
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+CREATE TABLE counsellor_details(
+    user_id INT,
+    qualification VARCHAR(100) NOT NULL,
+    specialization VARCHAR(100) NOT NULL,
+    experience INT DEFAULT 0,
+    PRIMARY KEY(user_id),
+    FOREIGN KEY(user_id)
+    REFERENCES users(user_id)
+    ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
 -- CHAT SUPPORT
 
 CREATE TABLE chat_support(
     chat_id INT AUTO_INCREMENT PRIMARY KEY,
-    student_id INT NOT NULL,
+    user_id INT NOT NULL,
     message TEXT NOT NULL,
     bot_reply TEXT,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    FOREIGN KEY(student_id)
+    FOREIGN KEY(user_id)
     REFERENCES users(user_id)
     ON DELETE CASCADE
 
@@ -111,7 +107,7 @@ CREATE TABLE chat_support(
 
 CREATE TABLE appointments(
     appointment_id INT AUTO_INCREMENT PRIMARY KEY,
-    student_id INT NOT NULL,
+    user_id INT NOT NULL,
     counsellor_id INT NOT NULL,
     appointment_date DATE NOT NULL,
     appointment_time TIME NOT NULL,
@@ -124,7 +120,7 @@ CREATE TABLE appointments(
     ) DEFAULT 'Pending',
 
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    FOREIGN KEY(student_id)
+    FOREIGN KEY(user_id)
     REFERENCES users(user_id)
     ON DELETE CASCADE,
 
@@ -150,7 +146,7 @@ CREATE TABLE wellness_resources(
 
 CREATE TABLE wellness_tracker(
     tracker_id INT AUTO_INCREMENT PRIMARY KEY,
-    student_id INT NOT NULL,
+    user_id INT NOT NULL,
     mood ENUM(
         'Happy',
         'Calm',
@@ -162,7 +158,7 @@ CREATE TABLE wellness_tracker(
     sleep_hours DECIMAL(3,1),
     note TEXT,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    FOREIGN KEY(student_id)
+    FOREIGN KEY(user_id)
     REFERENCES users(user_id)
     ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
