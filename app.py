@@ -4,7 +4,6 @@ from werkzeug.security import generate_password_hash, check_password_hash
 
 app = Flask(__name__)
 
-# Session secret key
 app.secret_key = "mindcare123"
 
 
@@ -49,6 +48,9 @@ def assessment():
     if "user_id" not in session:
         return redirect(url_for("login"))
 
+    if session.get("role") != "STUDENT":
+        return redirect(url_for("login"))
+
     return render_template("assessment.html")
 
 
@@ -60,6 +62,9 @@ def assessment():
 def chatbot():
 
     if "user_id" not in session:
+        return redirect(url_for("login"))
+
+    if session.get("role") != "STUDENT":
         return redirect(url_for("login"))
 
     return render_template("chatbot.html")
@@ -84,6 +89,9 @@ def appointment():
     if "user_id" not in session:
         return redirect(url_for("login"))
 
+    if session.get("role") != "STUDENT":
+        return redirect(url_for("login"))
+
     return render_template("appointment.html")
     # ===========================
 # REGISTER
@@ -94,21 +102,66 @@ def register():
 
     if request.method == "POST":
 
-        username = request.form["username"]
-        email = request.form["email"]
-        student_class = request.form["class"]
-        stream = request.form["stream"]
-
         # ===========================
-        # HASH PASSWORD
+        # FORM DATA
         # ===========================
 
-        password = generate_password_hash(
-            request.form["password"]
+        username = request.form.get("username", "").strip()
+        email = request.form.get("email", "").strip()
+        selected_role = request.form.get("role", "").strip()
+
+        password = request.form.get("password", "")
+        confirm_password = request.form.get(
+            "confirm_password",
+            ""
         )
+
+
+        # ===========================
+        # REQUIRED FIELDS
+        # ===========================
+
+        if not username or not email or not selected_role:
+
+            flash("Please fill all required fields.")
+
+            return redirect(
+                url_for("register")
+            )
+
+
+        # ===========================
+        # PASSWORD MATCH
+        # ===========================
+
+        if password != confirm_password:
+
+            flash("Passwords do not match.")
+
+            return redirect(
+                url_for("register")
+            )
+
+
+        # ===========================
+        # VALID ROLE
+        # ===========================
+
+        if selected_role not in [
+            "STUDENT",
+            "COUNSELLOR"
+        ]:
+
+            flash("Please select a valid role.")
+
+            return redirect(
+                url_for("register")
+            )
+
 
         db = get_db_connection()
         cursor = db.cursor()
+
 
         try:
 
@@ -117,38 +170,90 @@ def register():
             # ===========================
 
             cursor.execute(
-                "SELECT user_id FROM users WHERE email=%s",
+                """
+                SELECT user_id
+                FROM users
+                WHERE email = %s
+                """,
                 (email,)
             )
 
-            user = cursor.fetchone()
+            if cursor.fetchone():
 
-            if user:
                 flash("Email already exists.")
-                return redirect(url_for("register"))
+
+                return redirect(
+                    url_for("register")
+                )
+
 
             # ===========================
-            # GET STUDENT ROLE ID
+            # CHECK USERNAME
             # ===========================
 
             cursor.execute(
-                "SELECT role_id FROM roles WHERE role=%s",
-                ("STUDENT",)
+                """
+                SELECT user_id
+                FROM users
+                WHERE username = %s
+                """,
+                (username,)
             )
 
-            role = cursor.fetchone()
+            if cursor.fetchone():
 
-            if not role:
-                flash("Student role not found.")
-                return redirect(url_for("register"))
+                flash("Username already exists.")
 
-            student_role_id = role[0]
+                return redirect(
+                    url_for("register")
+                )
+
 
             # ===========================
-            # INSERT USER
+            # GET ROLE ID
             # ===========================
 
-            cursor.execute("""
+            cursor.execute(
+                """
+                SELECT role_id
+                FROM roles
+                WHERE role = %s
+                """,
+                (selected_role,)
+            )
+
+            role_data = cursor.fetchone()
+
+
+            if not role_data:
+
+                flash(
+                    "Selected role does not exist."
+                )
+
+                return redirect(
+                    url_for("register")
+                )
+
+
+            role_id = role_data[0]
+
+
+            # ===========================
+            # HASH PASSWORD
+            # ===========================
+
+            password_hash = generate_password_hash(
+                password
+            )
+
+
+            # ===========================
+            # INSERT INTO USERS
+            # ===========================
+
+            cursor.execute(
+                """
                 INSERT INTO users
                 (
                     username,
@@ -163,65 +268,179 @@ def register():
                     %s,
                     %s
                 )
-            """, (
-                username,
-                email,
-                password,
-                student_role_id
-            ))
+                """,
+                (
+                    username,
+                    email,
+                    password_hash,
+                    role_id
+                )
+            )
 
-            # Get new user ID
             user_id = cursor.lastrowid
 
+
             # ===========================
-            # INSERT STUDENT DETAILS
+            # STUDENT DETAILS
             # ===========================
 
-            cursor.execute("""
-                INSERT INTO student_details
-                (
-                    user_id,
-                    class,
-                    stream
-                )
-                VALUES
-                (
-                    %s,
-                    %s,
-                    %s
-                )
-            """, (
-                user_id,
-                student_class,
-                stream
-            ))
+            if selected_role == "STUDENT":
 
-            # Save both inserts together
+                student_class = request.form.get(
+                    "class",
+                    ""
+                ).strip()
+
+                stream = request.form.get(
+                    "stream",
+                    ""
+                ).strip()
+
+
+                if not student_class or not stream:
+
+                    db.rollback()
+
+                    flash(
+                        "Please select class and stream."
+                    )
+
+                    return redirect(
+                        url_for("register")
+                    )
+
+
+                cursor.execute(
+                    """
+                    INSERT INTO student_details
+                    (
+                        user_id,
+                        class,
+                        stream
+                    )
+                    VALUES
+                    (
+                        %s,
+                        %s,
+                        %s
+                    )
+                    """,
+                    (
+                        user_id,
+                        student_class,
+                        stream
+                    )
+                )
+
+
+            # ===========================
+            # COUNSELLOR DETAILS
+            # ===========================
+
+            elif selected_role == "COUNSELLOR":
+
+                qualification = request.form.get(
+                    "qualification",
+                    ""
+                ).strip()
+
+                specialization = request.form.get(
+                    "specialization",
+                    ""
+                ).strip()
+
+                experience = request.form.get(
+                    "experience",
+                    "0"
+                ).strip()
+
+
+                if not qualification or not specialization:
+
+                    db.rollback()
+
+                    flash(
+                        "Please enter qualification and specialization."
+                    )
+
+                    return redirect(
+                        url_for("register")
+                    )
+
+
+                if not experience:
+                    experience = 0
+
+
+                cursor.execute(
+                    """
+                    INSERT INTO counsellor_details
+                    (
+                        user_id,
+                        qualification,
+                        specialization,
+                        experience
+                    )
+                    VALUES
+                    (
+                        %s,
+                        %s,
+                        %s,
+                        %s
+                    )
+                    """,
+                    (
+                        user_id,
+                        qualification,
+                        specialization,
+                        experience
+                    )
+                )
+
+
+            # ===========================
+            # SAVE
+            # ===========================
+
             db.commit()
 
-            flash("Registration Successful.")
+            flash(
+                "Registration Successful."
+            )
 
-            return redirect(url_for("login"))
+            return redirect(
+                url_for("login")
+            )
+
 
         except mysql.connector.Error as err:
 
             db.rollback()
 
-            flash("Registration failed.")
+            print(
+                "Registration Error:",
+                err
+            )
 
-            print("Database Error:", err)
+            flash(
+                "Registration failed."
+            )
 
-            return redirect(url_for("register"))
+            return redirect(
+                url_for("register")
+            )
+
 
         finally:
 
             cursor.close()
             db.close()
 
-    return render_template("register.html")
 
-
-# ===========================
+    return render_template(
+        "register.html"
+    )
+    # ===========================
 # LOGIN
 # ===========================
 
@@ -230,16 +449,31 @@ def login():
 
     if request.method == "POST":
 
-        username = request.form["username"]
-        password = request.form["password"]
+        username = request.form.get(
+            "username",
+            ""
+        ).strip()
+
+        password = request.form.get(
+            "password",
+            ""
+        )
+
 
         db = get_db_connection()
         cursor = db.cursor(dictionary=True)
 
+
         try:
 
-            cursor.execute("""
+            # ===========================
+            # GET USER + ROLE
+            # ===========================
+
+            cursor.execute(
+                """
                 SELECT
+
                     users.user_id,
                     users.username,
                     users.email,
@@ -247,153 +481,269 @@ def login():
                     users.role_id,
                     users.is_active,
                     users.is_deleted,
+
                     roles.role
+
                 FROM users
 
-                JOIN roles
-                    ON users.role_id = roles.role_id
+                INNER JOIN roles
+                    ON users.role_id =
+                       roles.role_id
 
-                WHERE users.username=%s
-            """, (username,))
+                WHERE users.username = %s
+                """,
+                (username,)
+            )
 
             user = cursor.fetchone()
 
-        finally:
+
+        except mysql.connector.Error as err:
+
+            print(
+                "Login Database Error:",
+                err
+            )
+
+            flash(
+                "Login failed. Please try again."
+            )
 
             cursor.close()
             db.close()
+
+            return render_template(
+                "login.html"
+            )
+
+
+        finally:
+
+            try:
+                cursor.close()
+                db.close()
+            except:
+                pass
+
 
         # ===========================
         # USER NOT FOUND
         # ===========================
 
         if not user:
-            flash("Invalid Username or Password.")
-            return render_template("login.html")
+
+            flash(
+                "Invalid Username or Password."
+            )
+
+            return render_template(
+                "login.html"
+            )
+
 
         # ===========================
-        # ACCOUNT CHECK
+        # ACCOUNT STATUS
         # ===========================
 
-        if not user["is_active"] or user["is_deleted"]:
-            flash("Your account is inactive.")
-            return render_template("login.html")
+        if not user["is_active"]:
+
+            flash(
+                "Your account is inactive."
+            )
+
+            return render_template(
+                "login.html"
+            )
+
+
+        if user["is_deleted"]:
+
+            flash(
+                "Your account has been deleted."
+            )
+
+            return render_template(
+                "login.html"
+            )
+
 
         # ===========================
-        # CHECK HASHED PASSWORD
+        # PASSWORD CHECK
         # ===========================
 
-        if check_password_hash(
-            user["password"],
-            password
-        ):
+        try:
 
-            session["user_id"] = user["user_id"]
-            session["username"] = user["username"]
-            session["role"] = user["role"]
+            password_valid = check_password_hash(
+                user["password"],
+                password
+            )
 
-            # ===========================
-            # ROLE REDIRECTION
-            # ===========================
+        except (ValueError, TypeError):
 
-            if user["role"] == "ADMIN":
+            password_valid = False
 
-                return redirect(
-                    url_for("admin_dashboard")
-                )
 
-            elif user["role"] == "COUNSELLOR":
+        if not password_valid:
 
-                return redirect(
-                    url_for("counsellor_dashboard")
-                )
+            flash(
+                "Invalid Username or Password."
+            )
 
-            else:
+            return render_template(
+                "login.html"
+            )
 
-                return redirect(
-                    url_for("student_dashboard")
-                )
+
+        # ===========================
+        # SESSION
+        # ===========================
+
+        session.clear()
+
+        session["user_id"] = user["user_id"]
+        session["username"] = user["username"]
+        session["email"] = user["email"]
+        session["role"] = user["role"]
+
+
+        # ===========================
+        # ROLE REDIRECTION
+        # ===========================
+
+        if user["role"] == "ADMIN":
+
+            return redirect(
+                url_for("admin_dashboard")
+            )
+
+
+        elif user["role"] == "COUNSELLOR":
+
+            return redirect(
+                url_for("counsellor_dashboard")
+            )
+
+
+        elif user["role"] == "STUDENT":
+
+            return redirect(
+                url_for("student_dashboard")
+            )
+
 
         else:
 
-            flash("Invalid Username or Password.")
+            session.clear()
 
-    return render_template("login.html")
+            flash(
+                "Invalid user role."
+            )
+
+            return redirect(
+                url_for("login")
+            )
 
 
-# ===========================
+    return render_template(
+        "login.html"
+    )
+    # ===========================
 # STUDENT DASHBOARD
 # ===========================
 
 @app.route("/student_dashboard")
 def student_dashboard():
 
-    # Check login
     if "user_id" not in session:
-        return redirect(url_for("login"))
 
-    # Check role
-    if session["role"] != "STUDENT":
-        return redirect(url_for("login"))
+        return redirect(
+            url_for("login")
+        )
+
+
+    if session.get("role") != "STUDENT":
+
+        return redirect(
+            url_for("login")
+        )
+
 
     db = get_db_connection()
     cursor = db.cursor(dictionary=True)
 
+
     try:
 
-        cursor.execute("""
+        cursor.execute(
+            """
             SELECT
+
                 users.username,
                 users.email,
+
                 student_details.class,
                 student_details.stream
 
             FROM users
 
-            JOIN student_details
-                ON users.user_id = student_details.user_id
+            INNER JOIN student_details
 
-            WHERE users.user_id=%s
-        """, (session["user_id"],))
+                ON users.user_id =
+                   student_details.user_id
+
+            WHERE users.user_id = %s
+            """,
+            (session["user_id"],)
+        )
 
         student = cursor.fetchone()
+
 
     finally:
 
         cursor.close()
         db.close()
 
+
     if not student:
-        flash("Student profile not found.")
-        return redirect(url_for("logout"))
+
+        flash(
+            "Student profile not found."
+        )
+
+        return redirect(
+            url_for("logout")
+        )
+
 
     return render_template(
         "student_dashboard.html",
         student=student
     )
-# ===========================
+   # ===========================
 # ADMIN DASHBOARD
 # ===========================
 
 @app.route("/admin_dashboard")
 def admin_dashboard():
 
-    # ===========================
-    # LOGIN CHECK
-    # ===========================
-
     if "user_id" not in session:
-        return redirect(url_for("login"))
 
-    # ===========================
-    # ROLE CHECK
-    # ===========================
+        return redirect(
+            url_for("login")
+        )
 
-    if session["role"] != "ADMIN":
-        return redirect(url_for("login"))
+
+    if session.get("role") != "ADMIN":
+
+        return redirect(
+            url_for("login")
+        )
+
 
     db = get_db_connection()
     cursor = db.cursor(dictionary=True)
+
 
     try:
 
@@ -401,60 +751,82 @@ def admin_dashboard():
         # TOTAL STUDENTS
         # ===========================
 
-        cursor.execute("""
+        cursor.execute(
+            """
             SELECT COUNT(*) AS total
+
             FROM users u
-            JOIN roles r
+
+            INNER JOIN roles r
                 ON u.role_id = r.role_id
+
             WHERE r.role = 'STUDENT'
+
               AND u.is_deleted = FALSE
-        """)
+            """
+        )
 
         total_students = cursor.fetchone()["total"]
+
 
         # ===========================
         # TOTAL COUNSELLORS
         # ===========================
 
-        cursor.execute("""
+        cursor.execute(
+            """
             SELECT COUNT(*) AS total
+
             FROM users u
-            JOIN roles r
+
+            INNER JOIN roles r
                 ON u.role_id = r.role_id
+
             WHERE r.role = 'COUNSELLOR'
+
               AND u.is_deleted = FALSE
-        """)
+            """
+        )
 
         total_counsellors = cursor.fetchone()["total"]
+
 
         # ===========================
         # TOTAL ASSESSMENTS
         # ===========================
 
-        cursor.execute("""
+        cursor.execute(
+            """
             SELECT COUNT(*) AS total
             FROM assessments
-        """)
+            """
+        )
 
         total_assessments = cursor.fetchone()["total"]
+
 
         # ===========================
         # TOTAL APPOINTMENTS
         # ===========================
 
-        cursor.execute("""
+        cursor.execute(
+            """
             SELECT COUNT(*) AS total
             FROM appointments
-        """)
+            """
+        )
 
         total_appointments = cursor.fetchone()["total"]
+
 
         # ===========================
         # RECENT STUDENTS
         # ===========================
 
-        cursor.execute("""
+        cursor.execute(
+            """
             SELECT
+
                 u.user_id,
                 u.username,
                 u.email,
@@ -463,25 +835,30 @@ def admin_dashboard():
 
             FROM users u
 
-            JOIN roles r
+            INNER JOIN roles r
                 ON u.role_id = r.role_id
 
             WHERE r.role = 'STUDENT'
+
               AND u.is_deleted = FALSE
 
             ORDER BY u.user_id DESC
 
             LIMIT 5
-        """)
+            """
+        )
 
         students = cursor.fetchall()
+
 
         # ===========================
         # RECENT COUNSELLORS
         # ===========================
 
-        cursor.execute("""
+        cursor.execute(
+            """
             SELECT
+
                 u.user_id,
                 u.username,
                 u.email,
@@ -490,25 +867,30 @@ def admin_dashboard():
 
             FROM users u
 
-            JOIN roles r
+            INNER JOIN roles r
                 ON u.role_id = r.role_id
 
             WHERE r.role = 'COUNSELLOR'
+
               AND u.is_deleted = FALSE
 
             ORDER BY u.user_id DESC
 
             LIMIT 5
-        """)
+            """
+        )
 
         counsellors = cursor.fetchall()
+
 
         # ===========================
         # RECENT ASSESSMENTS
         # ===========================
 
-        cursor.execute("""
+        cursor.execute(
+            """
             SELECT
+
                 a.assessment_id,
                 u.username,
                 a.assessment_type,
@@ -518,28 +900,36 @@ def admin_dashboard():
 
             FROM assessments a
 
-            JOIN users u
-                ON a.user_id = u.user_id
+            INNER JOIN users u
 
-            ORDER BY a.assessment_id DESC
+                ON a.user_id =
+                   u.user_id
+
+            ORDER BY
+                a.assessment_id DESC
 
             LIMIT 5
-        """)
+            """
+        )
 
         assessments = cursor.fetchall()
+
 
         # ===========================
         # RECENT APPOINTMENTS
         # ===========================
 
-        cursor.execute("""
+        cursor.execute(
+            """
             SELECT
 
                 ap.appointment_id,
 
-                s.username AS student_name,
+                s.username
+                    AS student_name,
 
-                c.username AS counsellor_name,
+                c.username
+                    AS counsellor_name,
 
                 ap.appointment_date,
 
@@ -549,23 +939,31 @@ def admin_dashboard():
 
             FROM appointments ap
 
-            JOIN users s
-                ON ap.user_id = s.user_id
+            INNER JOIN users s
 
-            JOIN users c
-                ON ap.counsellor_id = c.user_id
+                ON ap.user_id =
+                   s.user_id
 
-            ORDER BY ap.appointment_id DESC
+            INNER JOIN users c
+
+                ON ap.counsellor_id =
+                   c.user_id
+
+            ORDER BY
+                ap.appointment_id DESC
 
             LIMIT 5
-        """)
+            """
+        )
 
         appointments = cursor.fetchall()
+
 
     finally:
 
         cursor.close()
         db.close()
+
 
     return render_template(
         "admin_dashboard.html",
@@ -585,44 +983,42 @@ def admin_dashboard():
         assessments=assessments,
 
         appointments=appointments
-    )
-
-
-# ===========================
+    ) 
+    # ===========================
 # COUNSELLOR DASHBOARD
 # ===========================
 
 @app.route("/counsellor_dashboard")
 def counsellor_dashboard():
 
-    # ===========================
-    # LOGIN CHECK
-    # ===========================
-
     if "user_id" not in session:
-        return redirect(url_for("login"))
 
-    # ===========================
-    # ROLE CHECK
-    # ===========================
+        return redirect(
+            url_for("login")
+        )
 
-    if session["role"] != "COUNSELLOR":
-        return redirect(url_for("login"))
+
+    if session.get("role") != "COUNSELLOR":
+
+        return redirect(
+            url_for("login")
+        )
+
 
     db = get_db_connection()
     cursor = db.cursor(dictionary=True)
 
+
     try:
 
-        # ===========================
-        # COUNSELLOR PROFILE
-        # ===========================
-
-        cursor.execute("""
+        cursor.execute(
+            """
             SELECT
+
                 users.username,
                 users.email,
                 users.created_at,
+
                 counsellor_details.qualification,
                 counsellor_details.specialization,
                 counsellor_details.experience
@@ -630,29 +1026,40 @@ def counsellor_dashboard():
             FROM users
 
             LEFT JOIN counsellor_details
-                ON users.user_id = counsellor_details.user_id
 
-            WHERE users.user_id=%s
-        """, (session["user_id"],))
+                ON users.user_id =
+                   counsellor_details.user_id
+
+            WHERE users.user_id = %s
+            """,
+            (session["user_id"],)
+        )
 
         counsellor = cursor.fetchone()
+
 
     finally:
 
         cursor.close()
         db.close()
 
+
     if not counsellor:
-        flash("Counsellor profile not found.")
-        return redirect(url_for("logout"))
+
+        flash(
+            "Counsellor profile not found."
+        )
+
+        return redirect(
+            url_for("logout")
+        )
+
 
     return render_template(
         "counsellor_dashboard.html",
         counsellor=counsellor
     )
-
-
-# ===========================
+    # ===========================
 # LOGOUT
 # ===========================
 
@@ -661,9 +1068,13 @@ def logout():
 
     session.clear()
 
-    flash("Logged out successfully.")
+    flash(
+        "Logged out successfully."
+    )
 
-    return redirect(url_for("home"))
+    return redirect(
+        url_for("home")
+    )
 
 
 # ===========================
@@ -671,4 +1082,7 @@ def logout():
 # ===========================
 
 if __name__ == "__main__":
-    app.run(debug=True)
+
+    app.run(
+        debug=True
+    )

@@ -43,7 +43,7 @@ VALUES
 (
 'Admin',
 'admin@mindcare.com',
-'$2y$10$FYhRXaElfD9aVBXjzkNn.OvXmBL8lhbzsi/UKlrIVfRAJivad27Vi',
+'scrypt:32768:8:1$jRN6qi5FiG2A8tTV$8b810b28bafa0447ad890ad4b894d762a83d4abe2d7b38198c0857b9ce3617f321c3b0101d281a621a263806d1ab6f474e784b88d2cd64e42caeb3f98f43eade',
 (SELECT role_id FROM roles WHERE role='ADMIN')
 );
 
