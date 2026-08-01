@@ -2,551 +2,880 @@
 <html lang="en">
 
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Counsellor Dashboard | MindCare</title>
 
-    <!-- Bootstrap 5 CSS -->
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
-    <!-- Bootstrap Icons -->
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" rel="stylesheet">
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
 
-    <style>
-        :root {
-            --brand-dark-teal: #0e4a5c;
-            --brand-deep-navy: #06232d;
-            --brand-mint: #2dd4bf;
-            --brand-mint-hover: #14b8a6;
-            --bg-canvas: #f0f4f8;
-            --card-border: #e2e8f0;
-        }
 
-        body {
-            background-color: var(--bg-canvas);
-            font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
-            color: #1e293b;
-        }
+<title>Counsellor Dashboard | MindCare</title>
 
-        /* Top Navbar */
-        .portal-navbar {
-            background: #ffffff;
-            border-bottom: 1px solid var(--card-border);
-            padding: 16px 40px;
-        }
 
-        .brand-text {
-            font-weight: 800;
-            font-size: 1.5rem;
-            color: var(--brand-dark-teal);
-            letter-spacing: -0.5px;
-            display: flex;
-            align-items: center;
-            gap: 6px;
-        }
+<!-- Bootstrap -->
 
-        .nav-links-menu a {
-            color: #334155;
-            font-weight: 600;
-            font-size: 0.95rem;
-            text-decoration: none;
-            transition: color 0.2s ease;
-            padding: 6px 12px;
-        }
+<link 
+href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css"
+rel="stylesheet">
 
-        .nav-links-menu a:hover,
-        .nav-links-menu a.active {
-            color: var(--brand-dark-teal);
-        }
 
-        /* Avatar Circle */
-        .avatar-circle {
-            width: 44px;
-            height: 44px;
-            border-radius: 50%;
-            background: var(--brand-dark-teal);
-            color: #ffffff;
-            font-weight: 700;
-            font-size: 1.1rem;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            cursor: pointer;
-            border: 2px solid #ffffff;
-            box-shadow: 0 3px 10px rgba(14, 74, 92, 0.2);
-            transition: all 0.2s ease;
-        }
+<!-- Bootstrap Icons -->
 
-        .avatar-circle:hover {
-            transform: scale(1.05);
-            background: var(--brand-mint-hover);
-        }
+<link
+href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css"
+rel="stylesheet">
 
-        /* Hero Banner */
-        .hero-section {
-            background: linear-gradient(135deg, var(--brand-deep-navy) 0%, var(--brand-dark-teal) 100%);
-            color: #ffffff;
-            padding: 55px 20px 95px 20px;
-            border-bottom-left-radius: 28px;
-            border-bottom-right-radius: 28px;
-            text-align: center;
-        }
 
-        .hero-badge {
-            background: rgba(45, 212, 191, 0.15);
-            color: var(--brand-mint);
-            padding: 8px 20px;
-            border-radius: 30px;
-            font-size: 0.82rem;
-            font-weight: 600;
-            display: inline-block;
-            backdrop-filter: blur(6px);
-            margin-bottom: 18px;
-            border: 1px solid rgba(45, 212, 191, 0.25);
-        }
 
-        .btn-mint {
-            background-color: var(--brand-mint-hover);
-            color: #ffffff;
-            font-weight: 600;
-            border-radius: 30px;
-            padding: 10px 24px;
-            border: none;
-            transition: all 0.2s ease;
-            font-size: 0.9rem;
-        }
+<style>
 
-        .btn-mint:hover {
-            background-color: #0d9488;
-            color: #ffffff;
-            transform: translateY(-2px);
-        }
 
-        /* Dashboard Container */
-        .dashboard-container {
-            margin-top: -55px;
-            padding-bottom: 60px;
-        }
+:root{
 
-        .card-custom {
-            background: #ffffff;
-            border: 1px solid var(--card-border);
-            border-radius: 18px;
-            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.04);
-            transition: transform 0.2s, box-shadow 0.2s;
-        }
+--mindcare-navy:#06232d;
+--mindcare-teal:#0e4a5c;
+--mindcare-mint:#14b8a6;
+--mindcare-bg:#f0f4f8;
 
-        .card-custom:hover {
-            transform: translateY(-3px);
-            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.06);
-        }
+}
 
-        /* Offcanvas Sidebar Drawer */
-        .account-offcanvas {
-            width: 330px !important;
-            border-top-left-radius: 24px;
-            border-bottom-left-radius: 24px;
-            border: none;
-            background: #ffffff;
-            box-shadow: -10px 0 30px rgba(0, 0, 0, 0.08);
-        }
 
-        .profile-card-box {
-            background: linear-gradient(135deg, #f0fdfa 0%, #e6f4f8 100%);
-            border-radius: 20px;
-            padding: 24px 20px;
-            text-align: center;
-            border: 1px solid #ccfbf1;
-            margin-bottom: 20px;
-        }
 
-        .profile-avatar-large {
-            width: 75px;
-            height: 75px;
-            background: var(--brand-dark-teal);
-            color: #ffffff;
-            font-size: 2rem;
-            font-weight: 800;
-            border-radius: 22px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            margin: 0 auto 12px auto;
-            box-shadow: 0 6px 16px rgba(14, 74, 92, 0.25);
-        }
+body{
 
-        .sidebar-menu-card {
-            background-color: #f8fafc;
-            border-radius: 14px;
-            padding: 14px 18px;
-            margin-bottom: 10px;
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            text-decoration: none;
-            color: #334155;
-            font-weight: 600;
-            font-size: 0.92rem;
-            transition: all 0.2s ease;
-        }
+background:var(--mindcare-bg);
 
-        .sidebar-menu-card:hover {
-            background-color: #ffffff;
-            border-color: #cbd5e1;
-            color: var(--brand-dark-teal);
-            box-shadow: 0 4px 12px rgba(14, 74, 92, 0.06);
-        }
+color:#1e293b;
 
-        .table-custom th {
-            font-size: 0.75rem;
-            text-transform: uppercase;
-            letter-spacing: 0.05em;
-            color: #64748b;
-            background: #f8fafc;
-            padding: 12px 16px;
-        }
+}
 
-        .table-custom td {
-            padding: 16px;
-            vertical-align: middle;
-        }
-    </style>
+
+
+/* HERO */
+
+.hero-bg{
+
+background:
+linear-gradient(
+135deg,
+var(--mindcare-navy),
+var(--mindcare-teal)
+);
+
+border-radius:0 0 30px 30px;
+
+}
+
+
+
+.dashboard-up{
+
+margin-top:-70px;
+
+}
+
+
+
+/* CARD */
+
+
+.dashboard-card{
+
+background:white;
+
+border:1px solid #e2e8f0;
+
+border-radius:18px;
+
+transition:.3s;
+
+}
+
+
+.dashboard-card:hover{
+
+transform:translateY(-5px);
+
+box-shadow:
+0 12px 30px rgba(6,35,45,.08);
+
+}
+
+
+
+/* ICON */
+
+.icon-box{
+
+width:55px;
+
+height:55px;
+
+border-radius:16px;
+
+display:flex;
+
+align-items:center;
+
+justify-content:center;
+
+font-size:22px;
+
+}
+
+
+
+
+/* TABLE */
+
+.custom-table{
+
+background:white;
+
+border-radius:20px;
+
+overflow:hidden;
+
+border:1px solid #e2e8f0;
+
+}
+
+
+
+/* profile */
+
+.profile-box{
+
+background:white;
+
+border-radius:20px;
+
+border:1px solid #e2e8f0;
+
+}
+
+
+
+</style>
+
+
 </head>
+
+
 
 <body>
 
-    <!-- Top Navbar -->
-     {%include 'includes/navbar.html'%}
-    <nav class="portal-navbar sticky-top">
-        <div class="d-flex justify-content-between align-items-center max-w-1320 mx-auto">
-            
-            <!-- Brand Logo -->
-            <div class="brand-text">
-                <img src="{{ url_for('static', filename='images/logo.png') }}" width="38" alt="MindCare Logo">
-                MindCare
-            </div>
 
-            <!-- Navbar Links -->
-            <div class="nav-links-menu d-none d-lg-flex align-items-center gap-2">
-                <a href="#" onclick="showSection('dashboard')" class="active">Overview</a>
-                <a href="#" onclick="showSection('appointments')">Appointments</a>
-                <a href="#" onclick="showSection('students')">Student Health</a>
-                <a href="#" onclick="showSection('assessments')">Evaluations</a>
-                <a href="#" onclick="showSection('profile')">Profile</a>
-            </div>
 
-            <!-- Profile Avatar Trigger -->
-            <div class="avatar-circle" data-bs-toggle="offcanvas" data-bs-target="#accountSidebar" aria-controls="accountSidebar" title="Counsellor Menu">
-                {{ session['username'][0] | upper if session.get('username') else 'D' }}
-            </div>
+<!-- Existing Navbar -->
 
-        </div>
-    </nav>
+{% include 'includes/navbar.html' %}
+<!-- ===========================
+     HERO SECTION
+=========================== -->
 
-    <!-- Side Drawer Navigation -->
-    <div class="offcanvas offcanvas-end account-offcanvas p-3" tabindex="-1" id="accountSidebar" aria-labelledby="accountSidebarLabel">
-        <div class="offcanvas-header pb-2">
-            <h6 class="offcanvas-title text-uppercase fw-bold text-muted small" id="accountSidebarLabel">COUNSELLOR PANEL</h6>
-            <button type="button" class="btn-close text-reset" data-bs-dismiss="offcanvas" aria-label="Close"></button>
-        </div>
 
-        <div class="offcanvas-body pt-0">
-            <div class="profile-card-box">
-                <div class="profile-avatar-large">
-                    {{ session['username'][0] | upper if session.get('username') else 'D' }}
-                </div>
-                <div class="fw-bold fs-5 text-dark mb-1">
-                    {{ session.get('username', 'Dr. Sarah Jenkins') }}
-                </div>
-                <span class="badge bg-teal text-white rounded-pill px-3 py-1 text-uppercase fw-bold" style="background-color: var(--brand-mint-hover); font-size: 0.7rem;">
-                    COUNSELLOR
-                </span>
-            </div>
+<section id="dashboard">
 
-            <a href="#" onclick="showSection('dashboard')" class="sidebar-menu-card" data-bs-dismiss="offcanvas">
-                <div class="d-flex align-items-center gap-2">
-                    <i class="bi bi-grid-1x2-fill text-teal"></i>
-                    <span>Dashboard Overview</span>
-                </div>
-                <i class="bi bi-chevron-right text-muted small"></i>
-            </a>
 
-            <a href="#" onclick="showSection('appointments')" class="sidebar-menu-card" data-bs-dismiss="offcanvas">
-                <div class="d-flex align-items-center gap-2">
-                    <i class="bi bi-calendar-check-fill text-teal"></i>
-                    <span>Manage Appointments</span>
-                </div>
-                <i class="bi bi-chevron-right text-muted small"></i>
-            </a>
+<div class="hero-bg text-white text-center">
 
-            <a href="#" onclick="showSection('students')" class="sidebar-menu-card" data-bs-dismiss="offcanvas">
-                <div class="d-flex align-items-center gap-2">
-                    <i class="bi bi-people-fill text-teal"></i>
-                    <span>Student Monitoring</span>
-                </div>
-                <i class="bi bi-chevron-right text-muted small"></i>
-            </a>
 
-            <a href="#" onclick="showSection('assessments')" class="sidebar-menu-card" data-bs-dismiss="offcanvas">
-                <div class="d-flex align-items-center gap-2">
-                    <i class="bi bi-clipboard2-pulse-fill text-teal"></i>
-                    <span>Assessment Reports</span>
-                </div>
-                <i class="bi bi-chevron-right text-muted small"></i>
-            </a>
+<div class="container py-5">
 
-            <a href="#" onclick="showSection('profile')" class="sidebar-menu-card" data-bs-dismiss="offcanvas">
-                <div class="d-flex align-items-center gap-2">
-                    <i class="bi bi-person-bounding-box text-teal"></i>
-                    <span>My Profile</span>
-                </div>
-                <i class="bi bi-chevron-right text-muted small"></i>
-            </a>
 
-            <hr class="my-3 text-muted opacity-25">
+<span
+class="badge rounded-pill px-3 py-2 mb-3"
+style="
+background:rgba(45,212,191,.15);
+color:#2dd4bf;
+">
 
-            <a href="{{ url_for('logout') }}" class="sidebar-menu-card text-danger bg-danger-subtle">
-                <div class="d-flex align-items-center gap-2">
-                    <i class="bi bi-box-arrow-right text-danger"></i>
-                    <span>Sign Out</span>
-                </div>
-                <i class="bi bi-chevron-right text-danger small"></i>
-            </a>
-        </div>
-    </div>
+<i class="bi bi-shield-check me-1"></i>
 
-    <!-- Main Content Workspace -->
-    <main>
+Counsellor Wellness Workspace
 
-        <!-- DASHBOARD OVERVIEW SECTION -->
-        <section id="dashboard" class="content-section">
-            <div class="hero-section">
-                <div class="container" style="max-width: 820px;">
-                    <span class="hero-badge"><i class="bi bi-shield-check me-1"></i> Campus Clinical Workspace</span>
-                    <h1 class="display-6 fw-bold mb-3" style="letter-spacing: -0.5px;">Welcome Back, <span style="color: var(--brand-mint);">{{ session.get('username', 'Doctor') }}</span></h1>
-                    <p class="text-white-50 fs-6 mb-4 px-md-3" style="line-height: 1.6;">
-                        Manage your student consultation requests, review high-risk student health assessments, and keep track of scheduled counselling sessions.
-                    </p>
-                </div>
-            </div>
+</span>
 
-            <div class="container dashboard-container px-3 px-md-4" style="max-width: 1280px;">
-                <!-- Metrics -->
-                <div class="row g-3 mb-4">
-                    <div class="col-6 col-md-3">
-                        <div class="card-custom p-4 text-center text-md-start">
-                            <span class="text-muted small text-uppercase fw-semibold d-block mb-1">Today's Sessions</span>
-                            <h3 class="fw-bold mb-0" style="color: var(--brand-dark-teal);">03 Scheduled</h3>
-                        </div>
-                    </div>
-                    <div class="col-6 col-md-3">
-                        <div class="card-custom p-4 text-center text-md-start">
-                            <span class="text-muted small text-uppercase fw-semibold d-block mb-1">Pending Requests</span>
-                            <h3 class="fw-bold text-warning mb-0">02 Pending</h3>
-                        </div>
-                    </div>
-                    <div class="col-6 col-md-3">
-                        <div class="card-custom p-4 text-center text-md-start">
-                            <span class="text-muted small text-uppercase fw-semibold d-block mb-1">High Risk Cases</span>
-                            <h3 class="fw-bold text-danger mb-0">01 Alert</h3>
-                        </div>
-                    </div>
-                    <div class="col-6 col-md-3">
-                        <div class="card-custom p-4 text-center text-md-start">
-                            <span class="text-muted small text-uppercase fw-semibold d-block mb-1">Total Students Served</span>
-                            <h3 class="fw-bold mb-0" style="color: var(--brand-dark-teal);">48 Total</h3>
-                        </div>
-                    </div>
-                </div>
 
-                <!-- Main Tables Grid -->
-                <div class="row g-4">
-                    <!-- Today's Appointments -->
-                    <div class="col-lg-8">
-                        <div class="card-custom p-4">
-                            <div class="d-flex justify-content-between align-items-center mb-3">
-                                <h5 class="fw-bold mb-0" style="color: var(--brand-dark-teal);">Today's Counselling Schedule</h5>
-                                <a href="#" onclick="showSection('appointments')" class="text-decoration-none small fw-bold" style="color: var(--brand-mint-hover);">Manage All</a>
-                            </div>
-                            <div class="table-responsive">
-                                <table class="table table-custom border align-middle mb-0">
-                                    <thead>
-                                        <tr>
-                                            <th>Time</th>
-                                            <th>Student Name</th>
-                                            <th>Department</th>
-                                            <th>Status</th>
-                                            <th>Action</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody>
-                                        <tr>
-                                            <td class="fw-bold">10:00 AM</td>
-                                            <td>Alfiya Shaikh</td>
-                                            <td>BCA - 3rd Sem</td>
-                                            <td><span class="badge bg-success-subtle text-success px-3 py-2 rounded-pill">Confirmed</span></td>
-                                            <td><button class="btn btn-mint btn-sm">Start Session</button></td>
-                                        </tr>
-                                        <tr>
-                                            <td class="fw-bold">02:00 PM</td>
-                                            <td>Rahul Verma</td>
-                                            <td>B.Tech CSE</td>
-                                            <td><span class="badge bg-warning-subtle text-warning px-3 py-2 rounded-pill">Pending Approval</span></td>
-                                            <td>
-                                                <button class="btn btn-outline-success btn-sm me-1">Approve</button>
-                                                <button class="btn btn-outline-danger btn-sm">Cancel</button>
-                                            </td>
-                                        </tr>
-                                    </tbody>
-                                </table>
-                            </div>
-                        </div>
-                    </div>
 
-                    <!-- Risk Alert Box -->
-                    <div class="col-lg-4">
-                        <div class="card-custom p-4 border-danger border-opacity-25 mb-4">
-                            <div class="d-flex align-items-center gap-2 mb-2">
-                                <i class="bi bi-exclamation-triangle-fill text-danger fs-5"></i>
-                                <h6 class="fw-bold mb-0 text-danger">Student Assessment Alert</h6>
-                            </div>
-                            <p class="text-muted small mb-3">1 Student logged high-stress evaluation scores this week.</p>
-                            <div class="p-3 bg-light rounded-3 border mb-3">
-                                <div class="fw-bold text-dark">Aman Kumar</div>
-                                <small class="text-muted d-block mb-1">Score: 18/21 (Severe Anxiety)</small>
-                                <span class="badge bg-danger">Requires Immediate Callback</span>
-                            </div>
-                            <button class="btn btn-outline-danger w-100 btn-sm">Review Assessment</button>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </section>
 
-        <!-- APPOINTMENTS SECTION -->
-        <section id="appointments" class="content-section" style="display:none;">
-            <div class="container py-5" style="max-width: 1280px;">
-                <div class="card-custom p-4">
-                    <h5 class="fw-bold mb-3" style="color: var(--brand-dark-teal);">All Appointment Requests</h5>
-                    <div class="table-responsive">
-                        <table class="table table-custom border align-middle mb-0">
-                            <thead>
-                                <tr>
-                                    <th>Date & Time</th>
-                                    <th>Student</th>
-                                    <th>Class</th>
-                                    <th>Issue Category</th>
-                                    <th>Status</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                <tr>
-                                    <td colspan="5" class="text-center text-muted py-4">No other appointment requests at the moment.</td>
-                                </tr>
-                            </tbody>
-                        </table>
-                    </div>
-                </div>
-            </div>
-        </section>
+<h1 class="display-6 fw-bold mb-3">
 
-        <!-- STUDENTS SECTION -->
-        <section id="students" class="content-section" style="display:none;">
-            <div class="container py-5" style="max-width: 1280px;">
-                <div class="card-custom p-4">
-                    <h5 class="fw-bold mb-3" style="color: var(--brand-dark-teal);">Student Health Monitoring</h5>
-                    <p class="text-muted small">Search and review student assessment histories confidentially.</p>
-                </div>
-            </div>
-        </section>
 
-        <!-- ASSESSMENTS SECTION -->
-        <section id="assessments" class="content-section" style="display:none;">
-            <div class="container py-5" style="max-width: 1280px;">
-                <div class="card-custom p-4">
-                    <h5 class="fw-bold mb-3" style="color: var(--brand-dark-teal);">Assessment Evaluation Logs</h5>
-                    <p class="text-muted small">No submitted evaluations pending review.</p>
-                </div>
-            </div>
-        </section>
+Welcome Back,
 
-        <!-- PROFILE SECTION -->
-        <section id="profile" class="content-section" style="display:none;">
-            <div class="container py-5" style="max-width: 1280px;">
-                <div class="card-custom p-4">
-                    <h5 class="fw-bold mb-4" style="color: var(--brand-dark-teal);">Counsellor Profile</h5>
-                    <table class="table table-borderless align-middle mb-0">
-                        <tbody>
-                            <tr>
-                                <th width="20%" class="text-muted">Name</th>
-                                <td class="fw-bold">{{ session.get('username', 'Dr. Sarah Jenkins') }}</td>
-                            </tr>
-                            <tr>
-                                <th class="text-muted">Email</th>
-                                <td class="fw-bold">{{ session.get('email', 'counsellor@mindcare.com') }}</td>
-                            </tr>
-                            <tr>
-                                <th class="text-muted">Specialization</th>
-                                <td class="fw-bold">Clinical Psychology & Academic Counseling</td>
-                            </tr>
-                        </tbody>
-                    </table>
-                </div>
-            </div>
-        </section>
+<span style="color:#2dd4bf;">
 
-    </main>
+{{ counsellor.username }}
 
-    <!-- Footer -->
-     {% include 'includes/footer.html' %}
+</span>
 
-    <!-- <footer class="text-white py-5 mt-5 border-top border-white border-opacity-10" style="background-color: var(--brand-deep-navy);">
-        <div class="container" style="max-width: 1280px;">
-            <div class="row g-4 mb-4">
-                <div class="col-lg-5 col-md-6">
-                    <div class="d-flex align-items-center gap-2 mb-3">
-                        <img src="{{ url_for('static', filename='images/logo.png') }}" width="34" alt="MindCare Logo">
-                        <span class="fw-bold fs-5 text-white" style="letter-spacing: -0.5px;">Mind<span style="color: #2dd4bf;">Care</span></span>
-                    </div>
-                    <p class="text-white-50 small mb-3" style="max-width: 400px; line-height: 1.6;">
-                        An AI-powered Digital Mental Health System developed for higher education students and campus counsellors.
-                    </p>
-                </div>
-                <div class="col-lg-3 col-md-6">
-                    <h6 class="fw-bold text-white mb-3 text-uppercase small" style="letter-spacing: 0.05em;">Counsellor Quick Links</h6>
-                    <ul class="list-unstyled m-0 p-0">
-                        <li class="mb-2"><a href="#" onclick="showSection('dashboard')" class="text-white-50 text-decoration-none small">Dashboard Overview</a></li>
-                        <li class="mb-2"><a href="#" onclick="showSection('appointments')" class="text-white-50 text-decoration-none small">Appointments</a></li>
-                        <li class="mb-2"><a href="#" onclick="showSection('students')" class="text-white-50 text-decoration-none small">Student Monitoring</a></li>
-                    </ul>
-                </div>
-                <div class="col-lg-4 col-md-6">
-                    <h6 class="fw-bold text-white mb-3 text-uppercase small" style="letter-spacing: 0.05em;">Clinical Safety</h6>
-                    <p class="text-white-50 small mb-2">Ensure student data confidentiality as per campus healthcare guidelines.</p>
-                </div>
-            </div>
-            <hr class="border-white opacity-10 my-4">
-            <div class="text-center small text-white-50">
-                &copy; MindCare Support System. Counsellor Portal.
-            </div>
-        </div>
-    </footer> -->
 
-    <!-- Bootstrap 5 JS -->
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+</h1>
 
-    <script>
-        function showSection(sectionId) {
-            const sections = document.querySelectorAll(".content-section");
-            sections.forEach(s => s.style.display = "none");
 
-            const targetSection = document.getElementById(sectionId);
-            if (targetSection) {
-                targetSection.style.display = "block";
-            }
-            window.scrollTo({ top: 0, behavior: 'smooth' });
-        }
-    </script>
 
-</body>
 
-</html>
+<p class="lead text-white-50 mx-auto"
+
+style="max-width:760px;">
+
+
+Monitor student mental health,
+manage counselling appointments,
+and provide confidential support
+through MindCare.
+
+
+</p>
+
+
+
+</div>
+
+
+</div>
+
+
+
+
+
+
+<!-- ===========================
+     LIVE SUMMARY
+=========================== -->
+
+
+<div class="container dashboard-up pb-5">
+
+
+
+<div class="row g-4">
+
+
+
+
+
+<!-- Pending -->
+
+
+<div class="col-md-3">
+
+
+<div class="dashboard-card p-4 h-100">
+
+
+<div class="icon-box mb-3"
+style="
+background:#fff4e8;
+color:#ea580c;
+">
+
+<i class="bi bi-hourglass-split"></i>
+
+</div>
+
+
+
+<small class="text-muted fw-semibold">
+
+PENDING REQUESTS
+
+</small>
+
+
+
+<h2 class="fw-bold mt-2"
+style="color:#0e4a5c;">
+
+
+{{ stats.pending }}
+
+
+</h2>
+
+
+
+<p class="small text-muted mb-0">
+
+Appointment requests
+
+</p>
+
+
+</div>
+
+
+</div>
+
+
+
+
+
+
+
+
+<!-- Today's Sessions -->
+
+
+<div class="col-md-3">
+
+
+<div class="dashboard-card p-4 h-100">
+
+
+<div class="icon-box mb-3"
+style="
+background:#e7f7f3;
+color:#0f766e;
+">
+
+
+<i class="bi bi-calendar-check-fill"></i>
+
+
+</div>
+
+
+
+<small class="text-muted fw-semibold">
+
+TODAY'S SESSIONS
+
+</small>
+
+
+
+<h2 class="fw-bold mt-2"
+style="color:#0e4a5c;">
+
+
+{{ stats.today_sessions }}
+
+
+</h2>
+
+
+
+
+<p class="small text-muted mb-0">
+
+Scheduled today
+
+</p>
+
+
+</div>
+
+
+</div>
+
+
+
+
+
+
+
+
+<!-- Completed -->
+
+
+<div class="col-md-3">
+
+
+<div class="dashboard-card p-4 h-100">
+
+
+<div class="icon-box mb-3"
+style="
+background:#edf3ff;
+color:#2563eb;
+">
+
+
+<i class="bi bi-check-circle-fill"></i>
+
+
+</div>
+
+
+
+
+<small class="text-muted fw-semibold">
+
+COMPLETED
+
+</small>
+
+
+
+<h2 class="fw-bold mt-2"
+style="color:#0e4a5c;">
+
+
+{{ stats.completed }}
+
+
+</h2>
+
+
+
+
+<p class="small text-muted mb-0">
+
+Completed sessions
+
+</p>
+
+
+</div>
+
+
+</div>
+
+
+
+
+
+
+
+
+<!-- Students -->
+
+
+<div class="col-md-3">
+
+
+<div class="dashboard-card p-4 h-100">
+
+
+<div class="icon-box mb-3"
+style="
+background:#f5f0ff;
+color:#7c3aed;
+">
+
+
+<i class="bi bi-people-fill"></i>
+
+
+</div>
+
+
+
+
+<small class="text-muted fw-semibold">
+
+STUDENTS
+
+</small>
+
+
+
+<h2 class="fw-bold mt-2"
+style="color:#0e4a5c;">
+
+
+{{ stats.students }}
+
+
+</h2>
+
+
+
+
+<p class="small text-muted mb-0">
+
+Under monitoring
+
+</p>
+
+
+</div>
+
+
+</div>
+
+
+
+
+
+</div>
+
+
+</div>
+
+
+</section>
+<!-- ===========================
+     COUNSELLING SCHEDULE
+=========================== -->
+
+
+<section id="appointments">
+
+
+<div class="container pb-5">
+
+
+
+<div class="custom-table p-4">
+
+
+
+<div class="d-flex justify-content-between align-items-center mb-4">
+
+
+<div>
+
+<h4 class="fw-bold mb-1"
+style="color:#0e4a5c;">
+
+<i class="bi bi-calendar2-check-fill me-2"></i>
+
+Counselling Schedule
+
+</h4>
+
+
+<p class="text-muted small mb-0">
+
+Live appointment requests from students
+
+</p>
+
+
+</div>
+
+
+
+<span class="badge rounded-pill"
+style="
+background:#e7f7f3;
+color:#0f766e;
+">
+
+
+Live Data
+
+
+</span>
+
+
+
+</div>
+
+
+
+
+
+
+<div class="table-responsive">
+
+
+<table class="table align-middle mb-0">
+
+
+
+<thead class="table-light">
+
+
+<tr>
+
+<th>
+Student
+</th>
+
+
+<th>
+Class
+</th>
+
+
+<th>
+Date
+</th>
+
+
+<th>
+Time
+</th>
+
+
+<th>
+Reason
+</th>
+
+
+<th>
+Status
+</th>
+
+
+<th>
+Action
+</th>
+
+
+</tr>
+
+
+</thead>
+
+
+
+
+<tbody>
+
+
+
+{% for appointment in appointments %}
+
+
+
+<tr>
+
+
+
+<td>
+
+
+<div class="fw-semibold">
+
+{{ appointment.username }}
+
+</div>
+
+
+<small class="text-muted">
+
+{{ appointment.email }}
+
+</small>
+
+
+</td>
+
+
+
+
+
+<td>
+
+
+{{ appointment.class }}
+
+<br>
+
+
+<small class="text-muted">
+
+{{ appointment.stream }}
+
+</small>
+
+
+</td>
+
+
+
+
+
+<td>
+
+{{ appointment.appointment_date }}
+
+</td>
+
+
+
+
+
+<td>
+
+{{ appointment.appointment_time }}
+
+</td>
+
+
+
+
+
+<td>
+
+
+{% if appointment.reason %}
+
+{{ appointment.reason }}
+
+{% else %}
+
+No reason provided
+
+{% endif %}
+
+
+</td>
+
+
+
+
+
+
+<td>
+
+
+
+{% if appointment.status == "Pending" %}
+
+
+<span class="badge bg-warning text-dark">
+
+Pending
+
+</span>
+
+
+
+{% elif appointment.status == "Approved" %}
+
+
+<span class="badge bg-success">
+
+Approved
+
+</span>
+
+
+
+
+{% elif appointment.status == "Completed" %}
+
+
+<span class="badge bg-primary">
+
+Completed
+
+</span>
+
+
+
+
+{% else %}
+
+
+<span class="badge bg-danger">
+
+Cancelled
+
+</span>
+
+
+{% endif %}
+
+
+
+</td>
+
+
+
+
+
+
+
+<td>
+
+
+{% if appointment.status == "Pending" %}
+
+
+
+<a href="{{ url_for('approve_appointment',id=appointment.appointment_id) }}"
+
+class="btn btn-success btn-sm rounded-pill">
+
+
+Approve
+
+
+</a>
+
+
+
+
+
+<a href="{{ url_for('cancel_appointment',id=appointment.appointment_id) }}"
+
+class="btn btn-outline-danger btn-sm rounded-pill">
+
+
+Cancel
+
+
+</a>
+
+
+
+{% else %}
+
+
+<span class="text-muted small">
+
+No action
+
+</span>
+
+
+{% endif %}
+
+
+
+</td>
+
+
+
+
+</tr>
+
+
+
+{% else %}
+
+
+
+<tr>
+
+<td colspan="7"
+class="text-center text-muted py-4">
+
+
+No counselling appointments found
+
+
+</td>
+
+</tr>
+
+
+{% endfor %}
+
+
+
+</tbody>
+
+
+</table>
+
+
+</div>
+
+
+
+</div>
+
+
+
+</div>
+
+
+</section>
+{%include 'includes/footer.html'%}

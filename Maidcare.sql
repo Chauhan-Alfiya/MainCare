@@ -33,6 +33,7 @@ CREATE TABLE users (
     otp_code VARCHAR(10) DEFAULT NULL,
     otp_expires DATETIME DEFAULT NULL,
     PRIMARY KEY(user_id),
+    
     FOREIGN KEY(role_id)
     REFERENCES roles(role_id)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;

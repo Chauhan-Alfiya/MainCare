@@ -80,19 +80,347 @@ def resources():
 
 
 # ===========================
-# APPOINTMENT PAGE
+# APPOINTMENT
 # ===========================
 
-@app.route("/appointment")
+@app.route("/appointment", methods=["GET", "POST"])
 def appointment():
+
+    # ===========================
+    # LOGIN CHECK
+    # ===========================
 
     if "user_id" not in session:
         return redirect(url_for("login"))
 
+    # ===========================
+    # STUDENT ONLY
+    # ===========================
+
     if session.get("role") != "STUDENT":
         return redirect(url_for("login"))
 
-    return render_template("appointment.html")
+    student_id = session["user_id"]
+
+    db = get_db_connection()
+    cursor = db.cursor(dictionary=True)
+
+    try:
+
+        # =================================================
+        # POST - BOOK APPOINTMENT
+        # =================================================
+
+        if request.method == "POST":
+
+            counsellor_id = request.form.get(
+                "counsellor_id",
+                ""
+            ).strip()
+
+            appointment_date = request.form.get(
+                "appointment_date",
+                ""
+            ).strip()
+
+            appointment_time = request.form.get(
+                "appointment_time",
+                ""
+            ).strip()
+
+            reason = request.form.get(
+                "reason",
+                ""
+            ).strip()
+
+            # ===========================
+            # REQUIRED FIELDS
+            # ===========================
+
+            if (
+                not counsellor_id
+                or not appointment_date
+                or not appointment_time
+            ):
+
+                flash(
+                    "Please select counsellor, date and time."
+                )
+
+                return redirect(
+                    url_for("appointment")
+                )
+
+            # ===========================
+            # CHECK COUNSELLOR
+            # ===========================
+
+            cursor.execute("""
+                SELECT
+                    u.user_id,
+                    u.username
+
+                FROM users u
+
+                INNER JOIN roles r
+                    ON u.role_id = r.role_id
+
+                INNER JOIN counsellor_details c
+                    ON u.user_id = c.user_id
+
+                WHERE u.user_id = %s
+
+                  AND r.role = 'COUNSELLOR'
+
+                  AND u.is_active = TRUE
+
+                  AND u.is_deleted = FALSE
+            """, (counsellor_id,))
+
+            counsellor = cursor.fetchone()
+
+            if not counsellor:
+
+                flash(
+                    "Selected counsellor is not available."
+                )
+
+                return redirect(
+                    url_for("appointment")
+                )
+
+            # ===========================
+            # CHECK DATE
+            # ===========================
+
+            cursor.execute("""
+                SELECT CURDATE() AS today
+            """)
+
+            today = cursor.fetchone()["today"]
+
+            from datetime import datetime
+
+            try:
+
+                selected_date = datetime.strptime(
+                    appointment_date,
+                    "%Y-%m-%d"
+                ).date()
+
+            except ValueError:
+
+                flash(
+                    "Invalid appointment date."
+                )
+
+                return redirect(
+                    url_for("appointment")
+                )
+
+            if selected_date < today:
+
+                flash(
+                    "Please select today or a future date."
+                )
+
+                return redirect(
+                    url_for("appointment")
+                )
+
+            # ===========================
+            # CHECK COUNSELLOR SLOT
+            # ===========================
+
+            cursor.execute("""
+                SELECT appointment_id
+
+                FROM appointments
+
+                WHERE counsellor_id = %s
+
+                  AND appointment_date = %s
+
+                  AND appointment_time = %s
+
+                  AND status IN (
+                      'Pending',
+                      'Approved'
+                  )
+            """, (
+                counsellor_id,
+                appointment_date,
+                appointment_time
+            ))
+
+            existing_slot = cursor.fetchone()
+
+            if existing_slot:
+
+                flash(
+                    "This time slot is already booked. Please select another time."
+                )
+
+                return redirect(
+                    url_for("appointment")
+                )
+
+            # ===========================
+            # CHECK STUDENT SLOT
+            # ===========================
+
+            cursor.execute("""
+                SELECT appointment_id
+
+                FROM appointments
+
+                WHERE user_id = %s
+
+                  AND appointment_date = %s
+
+                  AND appointment_time = %s
+
+                  AND status IN (
+                      'Pending',
+                      'Approved'
+                  )
+            """, (
+                student_id,
+                appointment_date,
+                appointment_time
+            ))
+
+            student_existing = cursor.fetchone()
+
+            if student_existing:
+
+                flash(
+                    "You already have an appointment at this date and time."
+                )
+
+                return redirect(
+                    url_for("appointment")
+                )
+
+            # ===========================
+            # INSERT APPOINTMENT
+            # ===========================
+
+            cursor.execute("""
+                INSERT INTO appointments
+                (
+                    user_id,
+                    counsellor_id,
+                    appointment_date,
+                    appointment_time,
+                    reason,
+                    status
+                )
+
+                VALUES
+                (
+                    %s,
+                    %s,
+                    %s,
+                    %s,
+                    %s,
+                    'Pending'
+                )
+            """, (
+                student_id,
+                counsellor_id,
+                appointment_date,
+                appointment_time,
+                reason if reason else None
+            ))
+
+            db.commit()
+
+            flash(
+                "Counselling appointment request submitted successfully."
+            )
+
+            return redirect(
+                url_for("student_dashboard")
+            )
+
+        # =================================================
+        # GET - LOAD COUNSELLORS
+        # =================================================
+
+        cursor.execute("""
+            SELECT
+
+                u.user_id,
+                u.username,
+                u.email,
+
+                c.qualification,
+                c.specialization,
+                c.experience
+
+            FROM users u
+
+            INNER JOIN roles r
+                ON u.role_id = r.role_id
+
+            INNER JOIN counsellor_details c
+                ON u.user_id = c.user_id
+
+            WHERE r.role = 'COUNSELLOR'
+
+              AND u.is_active = TRUE
+
+              AND u.is_deleted = FALSE
+
+            ORDER BY u.username ASC
+        """)
+
+        counsellors = cursor.fetchall()
+
+        # ===========================
+        # TODAY'S DATE
+        # ===========================
+
+        cursor.execute("""
+            SELECT CURDATE() AS today
+        """)
+
+        today_value = cursor.fetchone()["today"]
+
+        today = today_value.strftime("%Y-%m-%d")
+
+    except mysql.connector.Error as err:
+
+        db.rollback()
+
+        print(
+            "Appointment Database Error:",
+            err
+        )
+
+        flash(
+            "Unable to process appointment. Please try again."
+        )
+
+        return redirect(
+            url_for("student_dashboard")
+        )
+
+    finally:
+
+        cursor.close()
+        db.close()
+
+    # ===========================
+    # RENDER PAGE
+    # ===========================
+
+    return render_template(
+        "appointment.html",
+        counsellors=counsellors,
+        today=today
+    )
     # ===========================
 # REGISTER
 # ===========================
@@ -654,71 +982,120 @@ def login():
 @app.route("/student_dashboard")
 def student_dashboard():
 
+    # ===========================
+    # LOGIN CHECK
+    # ===========================
+
     if "user_id" not in session:
+        return redirect(url_for("login"))
 
-        return redirect(
-            url_for("login")
-        )
-
+    # ===========================
+    # ROLE CHECK
+    # ===========================
 
     if session.get("role") != "STUDENT":
+        return redirect(url_for("login"))
 
-        return redirect(
-            url_for("login")
-        )
-
+    user_id = session["user_id"]
 
     db = get_db_connection()
     cursor = db.cursor(dictionary=True)
 
-
     try:
 
-        cursor.execute(
-            """
+        # ===========================
+        # STUDENT PROFILE
+        # ===========================
+
+        cursor.execute("""
             SELECT
-
-                users.username,
-                users.email,
-
-                student_details.class,
-                student_details.stream
-
-            FROM users
-
-            INNER JOIN student_details
-
-                ON users.user_id =
-                   student_details.user_id
-
-            WHERE users.user_id = %s
-            """,
-            (session["user_id"],)
-        )
+                u.user_id,
+                u.username,
+                u.email,
+                s.class,
+                s.stream
+            FROM users u
+            INNER JOIN student_details s
+                ON u.user_id = s.user_id
+            WHERE u.user_id = %s
+        """, (user_id,))
 
         student = cursor.fetchone()
 
+        # ===========================
+        # TOTAL ASSESSMENTS
+        # ===========================
+
+        cursor.execute("""
+            SELECT COUNT(*) AS total
+            FROM assessments
+            WHERE user_id = %s
+        """, (user_id,))
+
+        total_assessments = cursor.fetchone()["total"]
+
+        # ===========================
+        # PENDING APPOINTMENTS
+        # ===========================
+
+        cursor.execute("""
+            SELECT COUNT(*) AS total
+            FROM appointments
+            WHERE user_id = %s
+            AND status = 'Pending'
+        """, (user_id,))
+
+        pending_appointments = cursor.fetchone()["total"]
+
+        # ===========================
+        # WELLNESS CHECK-INS
+        # ===========================
+
+        cursor.execute("""
+            SELECT COUNT(*) AS total
+            FROM wellness_tracker
+            WHERE user_id = %s
+        """, (user_id,))
+
+        wellness_checkins = cursor.fetchone()["total"]
+
+    except mysql.connector.Error as err:
+
+        print("Student Dashboard Database Error:", err)
+
+        flash("Unable to load student dashboard.")
+
+        return redirect(url_for("logout"))
 
     finally:
 
         cursor.close()
         db.close()
 
+    # ===========================
+    # STUDENT PROFILE NOT FOUND
+    # ===========================
 
     if not student:
 
-        flash(
-            "Student profile not found."
-        )
+        flash("Student profile not found.")
 
-        return redirect(
-            url_for("logout")
-        )
+        return redirect(url_for("logout"))
 
+    # ===========================
+    # RENDER DASHBOARD
+    # ===========================
 
     return render_template(
         "student_dashboard.html",
-        student=student
+
+        student=student,
+
+        total_assessments=total_assessments,
+
+        pending_appointments=pending_appointments,
+
+        wellness_checkins=wellness_checkins
     )
    # ===========================
 # ADMIN DASHBOARD
@@ -991,58 +1368,182 @@ def admin_dashboard():
 @app.route("/counsellor_dashboard")
 def counsellor_dashboard():
 
+    # ===========================
+    # LOGIN CHECK
+    # ===========================
+
     if "user_id" not in session:
+        return redirect(url_for("login"))
 
-        return redirect(
-            url_for("login")
-        )
-
+    # ===========================
+    # ROLE CHECK
+    # ===========================
 
     if session.get("role") != "COUNSELLOR":
+        return redirect(url_for("login"))
 
-        return redirect(
-            url_for("login")
-        )
-
+    counsellor_id = session["user_id"]
 
     db = get_db_connection()
     cursor = db.cursor(dictionary=True)
 
-
     try:
 
-        cursor.execute(
-            """
+        # ===========================
+        # COUNSELLOR PROFILE
+        # ===========================
+
+        cursor.execute("""
             SELECT
+                u.user_id,
+                u.username,
+                u.email,
+                u.created_at,
 
-                users.username,
-                users.email,
-                users.created_at,
+                c.qualification,
+                c.specialization,
+                c.experience
 
-                counsellor_details.qualification,
-                counsellor_details.specialization,
-                counsellor_details.experience
+            FROM users u
 
-            FROM users
+            LEFT JOIN counsellor_details c
+                ON u.user_id = c.user_id
 
-            LEFT JOIN counsellor_details
-
-                ON users.user_id =
-                   counsellor_details.user_id
-
-            WHERE users.user_id = %s
-            """,
-            (session["user_id"],)
-        )
+            WHERE u.user_id = %s
+        """, (counsellor_id,))
 
         counsellor = cursor.fetchone()
 
+        # ===========================
+        # PENDING APPOINTMENTS
+        # ===========================
+
+        cursor.execute("""
+            SELECT COUNT(*) AS total
+
+            FROM appointments
+
+            WHERE counsellor_id = %s
+            AND status = 'Pending'
+        """, (counsellor_id,))
+
+        pending = cursor.fetchone()["total"]
+
+        # ===========================
+        # TODAY'S SESSIONS
+        # ===========================
+
+        cursor.execute("""
+            SELECT COUNT(*) AS total
+
+            FROM appointments
+
+            WHERE counsellor_id = %s
+            AND appointment_date = CURDATE()
+            AND status != 'Cancelled'
+        """, (counsellor_id,))
+
+        today_sessions = cursor.fetchone()["total"]
+
+        # ===========================
+        # COMPLETED SESSIONS
+        # ===========================
+
+        cursor.execute("""
+            SELECT COUNT(*) AS total
+
+            FROM appointments
+
+            WHERE counsellor_id = %s
+            AND status = 'Completed'
+        """, (counsellor_id,))
+
+        completed = cursor.fetchone()["total"]
+
+        # ===========================
+        # STUDENTS UNDER MONITORING
+        # ===========================
+
+        cursor.execute("""
+            SELECT COUNT(DISTINCT user_id) AS total
+
+            FROM appointments
+
+            WHERE counsellor_id = %s
+        """, (counsellor_id,))
+
+        students = cursor.fetchone()["total"]
+
+        # ===========================
+        # COUNSELLOR STATS
+        # ===========================
+
+        stats = {
+            "pending": pending,
+            "today_sessions": today_sessions,
+            "completed": completed,
+            "students": students
+        }
+
+        # ===========================
+        # COUNSELLING SCHEDULE
+        # ===========================
+
+        cursor.execute("""
+            SELECT
+
+                a.appointment_id,
+                a.appointment_date,
+                a.appointment_time,
+                a.reason,
+                a.status,
+
+                u.username,
+                u.email,
+
+                s.class,
+                s.stream
+
+            FROM appointments a
+
+            INNER JOIN users u
+                ON a.user_id = u.user_id
+
+            INNER JOIN student_details s
+                ON u.user_id = s.user_id
+
+            WHERE a.counsellor_id = %s
+
+            ORDER BY
+                a.appointment_date ASC,
+                a.appointment_time ASC
+        """, (counsellor_id,))
+
+        appointments = cursor.fetchall()
+
+    except mysql.connector.Error as err:
+
+        print(
+            "Counsellor Dashboard Database Error:",
+            err
+        )
+
+        flash(
+            "Unable to load counsellor dashboard."
+        )
+
+        return redirect(
+            url_for("logout")
+        )
 
     finally:
 
         cursor.close()
         db.close()
 
+    # ===========================
+    # COUNSELLOR PROFILE CHECK
+    # ===========================
 
     if not counsellor:
 
@@ -1054,12 +1555,520 @@ def counsellor_dashboard():
             url_for("logout")
         )
 
+    # ===========================
+    # RENDER DASHBOARD
+    # ===========================
 
     return render_template(
         "counsellor_dashboard.html",
-        counsellor=counsellor
+
+        counsellor=counsellor,
+
+        stats=stats,
+
+        appointments=appointments
     )
     # ===========================
+# APPROVE APPOINTMENT
+# ===========================
+
+@app.route("/approve_appointment/<int:id>")
+def approve_appointment(id):
+
+    # ===========================
+    # LOGIN CHECK
+    # ===========================
+
+    if "user_id" not in session:
+        return redirect(url_for("login"))
+
+    # ===========================
+    # COUNSELLOR CHECK
+    # ===========================
+
+    if session.get("role") != "COUNSELLOR":
+        return redirect(url_for("login"))
+
+    counsellor_id = session["user_id"]
+
+    db = get_db_connection()
+    cursor = db.cursor()
+
+    try:
+
+        # ===========================
+        # CHECK APPOINTMENT
+        # ===========================
+
+        cursor.execute("""
+            SELECT appointment_id
+            FROM appointments
+            WHERE appointment_id = %s
+              AND counsellor_id = %s
+              AND status = 'Pending'
+        """, (
+            id,
+            counsellor_id
+        ))
+
+        appointment = cursor.fetchone()
+
+        if not appointment:
+
+            flash(
+                "Appointment not found or already processed."
+            )
+
+            return redirect(
+                url_for("counsellor_dashboard")
+            )
+
+        # ===========================
+        # APPROVE
+        # ===========================
+
+        cursor.execute("""
+            UPDATE appointments
+            SET status = 'Approved'
+            WHERE appointment_id = %s
+              AND counsellor_id = %s
+              AND status = 'Pending'
+        """, (
+            id,
+            counsellor_id
+        ))
+
+        db.commit()
+
+        flash(
+            "Appointment approved successfully."
+        )
+
+    except mysql.connector.Error as err:
+
+        db.rollback()
+
+        print(
+            "Approve Appointment Error:",
+            err
+        )
+
+        flash(
+            "Unable to approve appointment."
+        )
+
+    finally:
+
+        cursor.close()
+        db.close()
+
+    return redirect(
+        url_for("counsellor_dashboard")
+    )
+
+
+# ===========================
+# CANCEL APPOINTMENT
+# ===========================
+
+@app.route("/cancel_appointment/<int:id>")
+def cancel_appointment(id):
+
+    # ===========================
+    # LOGIN CHECK
+    # ===========================
+
+    if "user_id" not in session:
+        return redirect(url_for("login"))
+
+    # ===========================
+    # COUNSELLOR CHECK
+    # ===========================
+
+    if session.get("role") != "COUNSELLOR":
+        return redirect(url_for("login"))
+
+    counsellor_id = session["user_id"]
+
+    db = get_db_connection()
+    cursor = db.cursor()
+
+    try:
+
+        # ===========================
+        # CHECK APPOINTMENT
+        # ===========================
+
+        cursor.execute("""
+            SELECT appointment_id
+            FROM appointments
+            WHERE appointment_id = %s
+              AND counsellor_id = %s
+              AND status = 'Pending'
+        """, (
+            id,
+            counsellor_id
+        ))
+
+        appointment = cursor.fetchone()
+
+        if not appointment:
+
+            flash(
+                "Appointment not found or already processed."
+            )
+
+            return redirect(
+                url_for("counsellor_dashboard")
+            )
+
+        # ===========================
+        # CANCEL
+        # ===========================
+
+        cursor.execute("""
+            UPDATE appointments
+            SET status = 'Cancelled'
+            WHERE appointment_id = %s
+              AND counsellor_id = %s
+              AND status = 'Pending'
+        """, (
+            id,
+            counsellor_id
+        ))
+
+        db.commit()
+
+        flash(
+            "Appointment cancelled successfully."
+        )
+
+    except mysql.connector.Error as err:
+
+        db.rollback()
+
+        print(
+            "Cancel Appointment Error:",
+            err
+        )
+
+        flash(
+            "Unable to cancel appointment."
+        )
+
+    finally:
+
+        cursor.close()
+        db.close()
+
+    return redirect(
+        url_for("counsellor_dashboard")
+    )
+    # ===========================
+# MY APPOINTMENTS
+# STUDENT + COUNSELLOR
+# ===========================
+
+@app.route("/my_appointments")
+def my_appointments():
+
+    # ===========================
+    # LOGIN CHECK
+    # ===========================
+
+    if "user_id" not in session:
+        return redirect(url_for("login"))
+
+    user_id = session["user_id"]
+    role = session.get("role")
+
+    # ===========================
+    # ROLE CHECK
+    # ===========================
+
+    if role not in ["STUDENT", "COUNSELLOR"]:
+        return redirect(url_for("login"))
+
+    db = get_db_connection()
+    cursor = db.cursor(dictionary=True)
+
+    try:
+
+        # =================================================
+        # STUDENT
+        # =================================================
+
+        if role == "STUDENT":
+
+            cursor.execute("""
+                SELECT
+
+                    a.appointment_id,
+                    a.appointment_date,
+                    a.appointment_time,
+                    a.reason,
+                    a.status,
+
+                    cuser.username AS counsellor_name,
+
+                    cd.qualification,
+                    cd.specialization
+
+                FROM appointments a
+
+                INNER JOIN users cuser
+                    ON a.counsellor_id = cuser.user_id
+
+                LEFT JOIN counsellor_details cd
+                    ON a.counsellor_id = cd.user_id
+
+                WHERE a.user_id = %s
+
+                ORDER BY
+                    a.appointment_date DESC,
+                    a.appointment_time DESC,
+                    a.appointment_id DESC
+
+            """, (user_id,))
+
+            appointments = cursor.fetchall()
+
+
+        # =================================================
+        # COUNSELLOR
+        # =================================================
+
+        else:
+
+            cursor.execute("""
+                SELECT
+
+                    a.appointment_id,
+                    a.appointment_date,
+                    a.appointment_time,
+                    a.reason,
+                    a.status,
+
+                    suser.username AS student_name,
+                    suser.email AS student_email,
+
+                    sd.class AS student_class,
+                    sd.stream AS student_stream
+
+                FROM appointments a
+
+                INNER JOIN users suser
+                    ON a.user_id = suser.user_id
+
+                LEFT JOIN student_details sd
+                    ON a.user_id = sd.user_id
+
+                WHERE a.counsellor_id = %s
+
+                ORDER BY
+                    a.appointment_date DESC,
+                    a.appointment_time DESC,
+                    a.appointment_id DESC
+
+            """, (user_id,))
+
+            appointments = cursor.fetchall()
+
+
+    except mysql.connector.Error as err:
+
+        print(
+            "My Appointments Database Error:",
+            err
+        )
+
+        flash(
+            "Unable to load appointments."
+        )
+
+        if role == "STUDENT":
+
+            return redirect(
+                url_for("student_dashboard")
+            )
+
+        return redirect(
+            url_for("counsellor_dashboard")
+        )
+
+    finally:
+
+        cursor.close()
+        db.close()
+
+
+    # =================================================
+    # SAME PAGE
+    # =================================================
+
+    return render_template(
+        "my_appointments.html",
+        appointments=appointments,
+        role=role
+    )# ===========================
+# APPOINTMENT DETAIL
+# STUDENT + COUNSELLOR
+# ===========================
+
+@app.route("/appointment_detail/<int:id>")
+def appointment_detail(id):
+
+    # ===========================
+    # LOGIN CHECK
+    # ===========================
+
+    if "user_id" not in session:
+        return redirect(url_for("login"))
+
+    user_id = session["user_id"]
+    role = session.get("role")
+
+    # ===========================
+    # ROLE CHECK
+    # ===========================
+
+    if role not in ["STUDENT", "COUNSELLOR"]:
+        return redirect(url_for("login"))
+
+    db = get_db_connection()
+    cursor = db.cursor(dictionary=True)
+
+    try:
+
+        # =================================================
+        # STUDENT VIEW
+        # =================================================
+
+        if role == "STUDENT":
+
+            cursor.execute("""
+                SELECT
+
+                    a.appointment_id,
+                    a.appointment_date,
+                    a.appointment_time,
+                    a.reason,
+                    a.status,
+                    a.created_at,
+
+                    cuser.user_id AS counsellor_id,
+                    cuser.username AS counsellor_name,
+                    cuser.email AS counsellor_email,
+
+                    cd.qualification,
+                    cd.specialization,
+                    cd.experience
+
+                FROM appointments a
+
+                INNER JOIN users cuser
+                    ON a.counsellor_id = cuser.user_id
+
+                LEFT JOIN counsellor_details cd
+                    ON a.counsellor_id = cd.user_id
+
+                WHERE a.appointment_id = %s
+                  AND a.user_id = %s
+
+                LIMIT 1
+            """, (id, user_id))
+
+            appointment = cursor.fetchone()
+
+        # =================================================
+        # COUNSELLOR VIEW
+        # =================================================
+
+        else:
+
+            cursor.execute("""
+                SELECT
+
+                    a.appointment_id,
+                    a.appointment_date,
+                    a.appointment_time,
+                    a.reason,
+                    a.status,
+                    a.created_at,
+
+                    suser.user_id AS student_id,
+                    suser.username AS student_name,
+                    suser.email AS student_email,
+
+                    sd.class AS student_class,
+                    sd.stream AS student_stream
+
+                FROM appointments a
+
+                INNER JOIN users suser
+                    ON a.user_id = suser.user_id
+
+                LEFT JOIN student_details sd
+                    ON a.user_id = sd.user_id
+
+                WHERE a.appointment_id = %s
+                  AND a.counsellor_id = %s
+
+                LIMIT 1
+            """, (id, user_id))
+
+            appointment = cursor.fetchone()
+
+    except mysql.connector.Error as err:
+
+        print(
+            "Appointment Detail Database Error:",
+            err
+        )
+
+        flash(
+            "Unable to load appointment details."
+        )
+
+        if role == "STUDENT":
+            return redirect(
+                url_for("my_appointments")
+            )
+
+        return redirect(
+            url_for("my_appointments")
+        )
+
+    finally:
+
+        cursor.close()
+        db.close()
+
+    # ===========================
+    # APPOINTMENT NOT FOUND
+    # ===========================
+
+    if not appointment:
+
+        flash(
+            "Appointment not found or you are not authorized to view it."
+        )
+
+        return redirect(
+            url_for("my_appointments")
+        )
+
+    # ===========================
+    # RENDER DETAIL PAGE
+    # ===========================
+
+    return render_template(
+        "appointment_detail.html",
+        appointment=appointment,
+        role=role
+    )
+    
+# ===========================
 # LOGOUT
 # ===========================
 
@@ -1068,15 +2077,22 @@ def logout():
 
     session.clear()
 
-    flash(
-        "Logged out successfully."
-    )
+    flash("Logged out successfully.")
 
     return redirect(
         url_for("home")
     )
 
 
+# ===========================
+# RUN APPLICATION
+# ===========================
+
+if __name__ == "__main__":
+
+    app.run(
+        debug=True
+    )
 # ===========================
 # RUN APPLICATION
 # ===========================

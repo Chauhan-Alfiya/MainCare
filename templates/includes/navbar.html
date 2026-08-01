@@ -1,60 +1,85 @@
 <style>
-    .portal-navbar {
-            background: #ffffff;
-            border-bottom: 1px solid var(--card-border);
-            padding: 16px 40px;
-        }
+.portal-navbar {
+    background: #ffffff;
+    border-bottom: 1px solid #e2e8f0;
+    padding: 16px 40px;
+}
 
-        .brand-text {
-            font-weight: 750;
-            font-size: rem;
-            color: var(--brand-dark-teal);
-            letter-spacing: -0.5px;
-            display: flex;
-            align-items: center;
-            gap: 2px;
-        }
+.brand-text {
+    font-weight: 800;
+    font-size: 1.5rem;
+    color: #0e4a5c;
+    letter-spacing: -0.5px;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
 
-        .nav-links-menu a {
-            color: #334155;
-            font-weight: 600;
-            font-size: 0.95rem;
-            text-decoration: none;
-            transition: color 0.2s ease;
-            padding: 6px 12px;
-        }
+.nav-links-menu a {
+    color: #334155;
+    font-weight: 600;
+    font-size: 0.95rem;
+    text-decoration: none;
+    transition: color .2s ease;
+    padding: 6px 12px;
+}
 
-        .nav-links-menu a:hover,
-        .nav-links-menu a.active {
-            color: var(--brand-dark-teal);
-        }
+.nav-links-menu a:hover,
+.nav-links-menu a.active {
+    color: #0e4a5c;
+}
 
+.avatar-circle {
+    width: 44px;
+    height: 44px;
+    border-radius: 50%;
+    background: #0e4a5c;
+    color: #ffffff;
+    font-weight: 700;
+    font-size: 1.1rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    border: 2px solid #ffffff;
+    box-shadow: 0 3px 10px rgba(14,74,92,.2);
+    transition: .2s;
+}
+
+.avatar-circle:hover {
+    transform: scale(1.05);
+    background: #14b8a6;
+}
 </style>
 
 <nav class="portal-navbar sticky-top">
-        <div class="d-flex justify-content-between align-items-center max-w-1320 mx-auto">
-            
-            <!-- Brand Logo (Exact Font & Style from image) -->
-            <div class="brand-text">
-                <span>Mind</span>
-                <img src="{{ url_for('static', filename='images/logo.png') }}" width="38" alt="MindCare Logo">
-                <span>Care</span>
-            </div>
+    <div class="d-flex justify-content-between align-items-center">
 
-            <!-- Navigation Links (Exact links from image) -->
-            <div class="nav-links-menu d-none d-lg-flex align-items-center gap-2">
-                <a href="#" onclick="showSection('dashboard')" class="active">Home</a>
-                <a href="#" onclick="showSection('profile')">About</a>
-                <a href="#" onclick="showSection('resources')">Services</a>
-                <a href="#" onclick="showSection('assessment')">Assessment</a>
-                <a href="#" onclick="showSection('resources')">Resources</a>
-                <a href="#" onclick="showSection('chat')">Contact</a>
-            </div>
-
-            <!-- Top Right Profile Avatar (Opens Offcanvas Sidebar) -->
-            <div class="avatar-circle" data-bs-toggle="offcanvas" data-bs-target="#accountSidebar" aria-controls="accountSidebar" title="My Account Menu">
-                {{ session['username'][0] | upper if session.get('username') else 'S' }}
-            </div>
-
+        <!-- Logo -->
+        <div class="brand-text">
+            <img src="{{ url_for('static', filename='images/logo.png') }}"
+                 width="38"
+                 alt="MindCare Logo">
+            MindCare
         </div>
-    </nav>
+
+        <!-- Menu -->
+        <div class="nav-links-menu d-none d-lg-flex align-items-center gap-2">
+            <a href="#" onclick="showSection('dashboard')" class="active">Overview</a>
+            <a href="{{ url_for('appointment') }}" onclick="showSection('appointment')">Appointments</a>   
+            <a href="{{ url_for('my_appointments') }}" onclick="showSection('appointment')">My Appointments</a>            
+            <a href="#" onclick="showSection('students')">Student Health</a>
+            <a href="#" onclick="showSection('assessments')">Evaluations</a>
+            <a href="#" onclick="showSection('profile')">Profile</a>
+        </div>
+
+        <!-- Avatar -->
+        <div class="avatar-circle"
+             data-bs-toggle="offcanvas"
+             data-bs-target="#accountSidebar"
+             aria-controls="accountSidebar">
+            {{ session['username'][0] | upper if session.get('username') else 'D' }}
+        </div>
+
+    </div>
+</nav>
