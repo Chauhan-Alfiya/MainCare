@@ -106,6 +106,36 @@ CREATE TABLE chat_support(
 
 -- APPOINTMENTS
 
+-- CREATE TABLE appointments (
+--     appointment_id INT AUTO_INCREMENT PRIMARY KEY,
+
+--     student_id INT NOT NULL,
+--     counsellor_id INT NOT NULL,
+
+--     appointment_date DATE NOT NULL,
+--     appointment_time TIME NOT NULL,
+
+--     reason TEXT,
+
+--     status ENUM(
+--         'Pending',
+--         'Approved',
+--         'Rejected',
+--         'Completed',
+--         'Cancelled'
+--     ) DEFAULT 'Pending',
+
+--     counsellor_message TEXT,
+--     student_message TEXT,
+
+--     meeting_link VARCHAR(255),
+
+--     notes TEXT,
+
+--     completed_at DATETIME,
+
+--     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+-- );
 CREATE TABLE appointments(
     appointment_id INT AUTO_INCREMENT PRIMARY KEY,
     user_id INT NOT NULL,
