@@ -177,6 +177,7 @@
 {% include 'includes/navbar.html' %}
 
 
+
 <div class="detail-container">
 
 
@@ -521,87 +522,104 @@
                 {% endif %}
 
             </div>
+            {% if role == "STUDENT" and appointment.counsellor_message %}
+
+<div class="reason-box mb-4">
+
+
+    <div class="detail-label mb-2">
+
+        Counsellor Message
+
+    </div>
+
+
+    <p class="text-muted mb-0">
+
+        <i class="bi bi-chat-left-text me-2"></i>
+
+        {{ appointment.counsellor_message }}
+
+    </p>
+
+
+</div>
+
+
+{% endif %}
+<!-- consellor -->
+
+{% if role == "COUNSELLOR" %}
+
+<div class="reason-box mb-4">
+
+    <div class="detail-label mb-2">
+        Counsellor Message
+    </div>
+
+
+    <form method="POST">
+
+
+        <textarea
+        class="form-control"
+        name="counsellor_message"
+        rows="4"
+        placeholder="Example: I am not available today, sorry. Please book another appointment.">{{ appointment.counsellor_message or "" }}</textarea>
 
 
 
-            <!-- =================================================
-                 COUNSELLOR ACTIONS
-            ================================================== -->
-
-            {% if role == "COUNSELLOR" %}
-
-                {% if appointment.status == "Pending" %}
-
-                    <div
-                        class="d-flex flex-wrap gap-2 mb-4">
-
-                        <a
-                            href="{{ url_for('approve_appointment', id=appointment.appointment_id) }}"
-                            class="btn btn-success-custom">
-
-                            <i class="bi bi-check-circle me-1"></i>
-
-                            Approve
-
-                        </a>
+        {% if appointment.status == "Pending" %}
 
 
-                        <a
-                            href="{{ url_for('cancel_appointment', id=appointment.appointment_id) }}"
-                            class="btn btn-danger-custom">
+        <div class="mt-3 d-flex gap-2">
 
-                            <i class="bi bi-x-circle me-1"></i>
 
-                            Cancel
+            <button
+            type="submit"
+            name="action"
+            value="approve"
+            class="btn btn-success-custom">
 
-                        </a>
+                <i class="bi bi-check-circle me-1"></i>
 
-                    </div>
+                Approve
 
-                {% endif %}
-
-            {% endif %}
+            </button>
 
 
 
-            <!-- =================================================
-                 CHAT PLACEHOLDER
-            ================================================== -->
-
-            <div class="border-top pt-4">
-
-                <h5 class="fw-bold mb-2">
-
-                    <i class="bi bi-chat-heart me-2"
-                       style="color:#0e4a5c;">
-                    </i>
-
-                    Counselling Conversation
-
-                </h5>
-
-                <p class="text-muted small mb-3">
-
-                    Private chat between the student and counsellor
-                    will be available here.
-
-                </p>
+            <button
+            type="submit"
+            name="action"
+            value="cancel"
+            class="btn btn-danger-custom">
 
 
-                <!-- Chat route next step -->
+                <i class="bi bi-x-circle me-1"></i>
 
-                <button
-                    type="button"
-                    class="btn btn-chat"
-                    disabled>
+                Cancel
 
-                    <i class="bi bi-chat-dots-fill me-1"></i>
+            </button>
 
-                    Chat Coming Next
 
-                </button>
+        </div>
 
-            </div>
+
+        {% endif %}
+
+
+    </form>
+
+
+</div>
+
+{% endif %}
+            
+
+
+            
+                
 
 
 

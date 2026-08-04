@@ -147,6 +147,11 @@
 <!-- Logo -->
 
 <a class="navbar-brand" href="#">
+    <a href="{{ url_for('appointment') }}" onclick="showSection('appointment')">Appointments</a>   
+            <a href="{{ url_for('my_appointments') }}" onclick="showSection('appointment')">My Appointments</a>            
+<a href="{{ url_for('wellness_tracker') }}">Wellness Tracker</a>           
+<a href="#" onclick="showSection('assessments')">Evaluations</a>
+            <a href="#" onclick="showSection('profile')">Profile</a>
 
 <span>Mind</span>
 

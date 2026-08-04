@@ -50,6 +50,28 @@
     transform: scale(1.05);
     background: #14b8a6;
 }
+.nav-right{
+
+    margin-left:auto;
+
+    display:flex;
+
+    align-items:center;
+
+    gap:28px;
+
+        color: #0e4a5c;
+
+
+}.divider{
+
+    width:1px;
+
+    height:28px;
+
+    background:#d1d5db;
+
+}
 </style>
 
 <nav class="portal-navbar sticky-top">
@@ -64,16 +86,50 @@
         </div>
 
         <!-- Menu -->
-        <div class="nav-links-menu d-none d-lg-flex align-items-center gap-2">
+        <!-- <div class="nav-links-menu d-none d-lg-flex align-items-center gap-2">
             <a href="#" onclick="showSection('dashboard')" class="active">Overview</a>
-            <a href="{{ url_for('appointment') }}" onclick="showSection('appointment')">Appointments</a>   
-            <a href="{{ url_for('my_appointments') }}" onclick="showSection('appointment')">My Appointments</a>            
-            <a href="#" onclick="showSection('students')">Student Health</a>
-            <a href="#" onclick="showSection('assessments')">Evaluations</a>
-            <a href="#" onclick="showSection('profile')">Profile</a>
-        </div>
+           <a href="{{ url_for('counsellors') }}">
+    <i class="bi bi-person-heart"></i>
+    Counsellors
+</a>
+        </div> -->
 
         <!-- Avatar -->
+         <div class="nav-right">
+
+<a 
+{% if session.get('role') == 'ADMIN' %}
+
+href="{{ url_for('admin_dashboard') }}"
+
+{% elif session.get('role') == 'COUNSELLOR' %}
+
+href="{{ url_for('counsellor_dashboard') }}"
+
+{% elif session.get('role') == 'STUDENT' %}
+
+href="{{ url_for('student_dashboard') }}"
+
+{% else %}
+
+href="{{ url_for('home') }}"
+
+{% endif %}
+
+class="nav-link home-link">
+
+<i class="bi bi-house-fill me-1"></i>
+
+Home
+
+</a>
+
+
+</a><div class="divider"></div>
+
+
+
+</div>
         <div class="avatar-circle"
              data-bs-toggle="offcanvas"
              data-bs-target="#accountSidebar"

@@ -104,45 +104,22 @@ CREATE TABLE chat_support(
 
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
--- APPOINTMENTS
-
--- CREATE TABLE appointments (
---     appointment_id INT AUTO_INCREMENT PRIMARY KEY,
-
---     student_id INT NOT NULL,
---     counsellor_id INT NOT NULL,
-
---     appointment_date DATE NOT NULL,
---     appointment_time TIME NOT NULL,
-
---     reason TEXT,
-
---     status ENUM(
---         'Pending',
---         'Approved',
---         'Rejected',
---         'Completed',
---         'Cancelled'
---     ) DEFAULT 'Pending',
-
---     counsellor_message TEXT,
---     student_message TEXT,
-
---     meeting_link VARCHAR(255),
-
---     notes TEXT,
-
---     completed_at DATETIME,
-
---     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
--- );
 CREATE TABLE appointments(
     appointment_id INT AUTO_INCREMENT PRIMARY KEY,
+
     user_id INT NOT NULL,
     counsellor_id INT NOT NULL,
+
     appointment_date DATE NOT NULL,
     appointment_time TIME NOT NULL,
+
     reason TEXT,
+
+    student_message TEXT,
+    counsellor_message TEXT,
+
+    meeting_link VARCHAR(255),
+
     status ENUM(
         'Pending',
         'Approved',
@@ -150,7 +127,10 @@ CREATE TABLE appointments(
         'Cancelled'
     ) DEFAULT 'Pending',
 
+    completed_at DATETIME DEFAULT NULL,
+
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+
     FOREIGN KEY(user_id)
     REFERENCES users(user_id)
     ON DELETE CASCADE,
@@ -158,9 +138,7 @@ CREATE TABLE appointments(
     FOREIGN KEY(counsellor_id)
     REFERENCES users(user_id)
     ON DELETE CASCADE
-
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
-
 -- WELLNESS RESOURCES
 
 CREATE TABLE wellness_resources(

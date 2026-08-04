@@ -525,27 +525,14 @@
 
                                     <td>
 
-                                        {% if appointment.status == "Pending" %}
+    <a href="{{ url_for('appointment_detail', id=appointment.appointment_id) }}"
+       class="btn-manage">
 
-                                            <a
-                                                href="{{ url_for('appointment_detail', id=appointment.appointment_id) }}"
-                                                class="btn-manage">
+        <i class="bi bi-eye"></i> View
 
-                                                Manage
+    </a>
 
-                                            </a>
-
-                                        {% else %}
-
-                                            <span class="no-action">
-
-                                                No action
-
-                                            </span>
-
-                                        {% endif %}
-
-                                    </td>
+</td>
 
 
                                 </tr>
