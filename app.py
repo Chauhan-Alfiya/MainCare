@@ -2672,6 +2672,72 @@ def delete_resource(resource_id):
     flash("Deleted")
 
     return redirect(url_for("resources"))
+    # ===========================
+# PROFILE
+# ===========================
+
+@app.route("/profile")
+def profile():
+
+    if "user_id" not in session:
+        return redirect(url_for("login"))
+
+    db = get_db_connection()
+    cursor = db.cursor(dictionary=True)
+
+    role = session.get("role")
+
+    if role == "STUDENT":
+
+        cursor.execute("""
+            SELECT
+                u.username,
+                u.email,
+                u.created_at,
+                s.class,
+                s.stream
+            FROM users u
+            INNER JOIN student_details s
+            ON u.user_id=s.user_id
+            WHERE u.user_id=%s
+        """,(session["user_id"],))
+
+    elif role == "COUNSELLOR":
+
+        cursor.execute("""
+            SELECT
+                u.username,
+                u.email,
+                u.created_at,
+                c.qualification,
+                c.specialization,
+                c.experience
+            FROM users u
+            INNER JOIN counsellor_details c
+            ON u.user_id=c.user_id
+            WHERE u.user_id=%s
+        """,(session["user_id"],))
+
+    else:
+
+        cursor.execute("""
+            SELECT
+                username,
+                email,
+                created_at
+            FROM users
+            WHERE user_id=%s
+        """,(session["user_id"],))
+
+    user = cursor.fetchone()
+
+    cursor.close()
+    db.close()
+
+    return render_template(
+        "profile.html",
+        user=user
+    )
 # ===========================
 # LOGOUT
 # ===========================
