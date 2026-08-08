@@ -2408,7 +2408,6 @@ def wellness_history():
         records=records,
         role=session.get("role")
     )
-##=====
 # ===========================
 # ALL COUNSELLORS PAGE
 # ===========================

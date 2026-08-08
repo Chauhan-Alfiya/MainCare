@@ -85,57 +85,37 @@
             MindCare
         </div>
 
-        <!-- Menu -->
-        <!-- <div class="nav-links-menu d-none d-lg-flex align-items-center gap-2">
-            <a href="#" onclick="showSection('dashboard')" class="active">Overview</a>
-           <a href="{{ url_for('counsellors') }}">
-    <i class="bi bi-person-heart"></i>
-    Counsellors
-</a>
-        </div> -->
-
         <!-- Avatar -->
-         <div class="nav-right">
+         <!-- Logo -->
+<div class="brand-text">
+    <img src="{{ url_for('static', filename='images/logo.png') }}"
+         width="38"
+         alt="MindCare Logo">
+    MindCare
+</div>
 
-<a 
-{% if session.get('role') == 'ADMIN' %}
+<!-- Avatar -->
+<div class="nav-right">
 
-href="{{ url_for('admin_dashboard') }}"
+    <a
+        {% if session.get('role') == 'ADMIN' %}
+            href="{{ url_for('admin_dashboard') }}"
 
-{% elif session.get('role') == 'COUNSELLOR' %}
+        {% elif session.get('role') == 'COUNSELLOR' %}
+            href="{{ url_for('counsellor_dashboard') }}"
 
-href="{{ url_for('counsellor_dashboard') }}"
+        {% elif session.get('role') == 'STUDENT' %}
+            href="{{ url_for('student_dashboard') }}"
 
-{% elif session.get('role') == 'STUDENT' %}
+        {% else %}
+            href="{{ url_for('home') }}"
+        {% endif %}
 
-href="{{ url_for('student_dashboard') }}"
+        class="nav-link home-link">
 
-{% else %}
+        Home
 
-href="{{ url_for('home') }}"
-
-{% endif %}
-
-class="nav-link home-link">
-
-<i class="bi bi-house-fill me-1"></i>
-
-Home
-
-</a>
-
-
-</a><div class="divider"></div>
-
-
+    </a>
 
 </div>
-        <div class="avatar-circle"
-             data-bs-toggle="offcanvas"
-             data-bs-target="#accountSidebar"
-             aria-controls="accountSidebar">
-            {{ session['username'][0] | upper if session.get('username') else 'D' }}
-        </div>
-
-    </div>
 </nav>

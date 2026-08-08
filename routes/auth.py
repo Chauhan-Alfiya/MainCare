@@ -1,145 +1,220 @@
 from flask import *
 import mysql.connector
-from werkzeug.security import (generate_password_hash,check_password_hash)
+from werkzeug.security import generate_password_hash, check_password_hash
 from routes.database import get_db_connection
 
-    def init_auth_routes(app):
-    # ===========================
-    # REGISTER
-    # ===========================
+def init_auth_routes(app):
 
-        @app.route("/register", methods=["GET", "POST"])
-        def register():
+        # ===========================
+        # REGISTER
+        # ===========================
 
-            if request.method == "POST":
+    @app.route("/register", methods=["GET", "POST"])
+    def register():
+
+        if request.method == "POST":
+
+            # ===========================
+            # FORM DATA
+            # ===========================
+
+            username = request.form.get("username", "").strip()
+            email = request.form.get("email", "").strip()
+            selected_role = request.form.get("role", "").strip()
+
+            password = request.form.get("password", "")
+            confirm_password = request.form.get(
+                "confirm_password",
+                ""
+            )
+
+
+            # ===========================
+            # REQUIRED FIELDS
+            # ===========================
+
+            if not username or not email or not selected_role:
+
+                flash("Please fill all required fields.")
+
+                return redirect(
+                    url_for("register")
+                )
+
+
+            # ===========================
+            # PASSWORD MATCH
+            # ===========================
+
+            if password != confirm_password:
+
+                flash("Passwords do not match.")
+
+                return redirect(
+                    url_for("register")
+                )
+
+
+            # ===========================
+            # VALID ROLE
+            # ===========================
+
+            if selected_role not in [
+                "STUDENT",
+                "COUNSELLOR"
+            ]:
+
+                flash("Please select a valid role.")
+
+                return redirect(
+                    url_for("register")
+                )
+
+
+            db = get_db_connection()
+            cursor = db.cursor()
+
+
+            try:
 
                 # ===========================
-                # FORM DATA
+                # CHECK EMAIL
                 # ===========================
 
-                username = request.form.get("username", "").strip()
-                email = request.form.get("email", "").strip()
-                selected_role = request.form.get("role", "").strip()
+                cursor.execute(
+                    """
+                    SELECT user_id
+                    FROM users
+                    WHERE email = %s
+                    """,
+                    (email,)
+                )
 
-                password = request.form.get("password", "")
-                confirm_password = request.form.get(
-                    "confirm_password",
-                    ""
+                if cursor.fetchone():
+
+                    flash("Email already exists.")
+
+                    return redirect(
+                        url_for("register")
+                    )
+
+
+                # ===========================
+                # CHECK USERNAME
+                # ===========================
+
+                cursor.execute(
+                    """
+                    SELECT user_id
+                    FROM users
+                    WHERE username = %s
+                    """,
+                    (username,)
+                )
+
+                if cursor.fetchone():
+
+                    flash("Username already exists.")
+
+                    return redirect(
+                        url_for("register")
+                    )
+
+
+                # ===========================
+                # GET ROLE ID
+                # ===========================
+
+                cursor.execute(
+                    """
+                    SELECT role_id
+                    FROM roles
+                    WHERE role = %s
+                    """,
+                    (selected_role,)
+                )
+
+                role_data = cursor.fetchone()
+
+
+                if not role_data:
+
+                    flash(
+                        "Selected role does not exist."
+                    )
+
+                    return redirect(
+                        url_for("register")
+                    )
+
+
+                role_id = role_data[0]
+
+
+                # ===========================
+                # HASH PASSWORD
+                # ===========================
+
+                password_hash = generate_password_hash(
+                    password
                 )
 
 
                 # ===========================
-                # REQUIRED FIELDS
+                # INSERT INTO USERS
                 # ===========================
 
-                if not username or not email or not selected_role:
-
-                    flash("Please fill all required fields.")
-
-                    return redirect(
-                        url_for("register")
+                cursor.execute(
+                    """
+                    INSERT INTO users
+                    (
+                        username,
+                        email,
+                        password,
+                        role_id
                     )
+                    VALUES
+                    (
+                        %s,
+                        %s,
+                        %s,
+                        %s
+                    )
+                    """,
+                    (
+                        username,
+                        email,
+                        password_hash,
+                        role_id
+                    )
+                )
+
+                user_id = cursor.lastrowid
 
 
                 # ===========================
-                # PASSWORD MATCH
+                # STUDENT DETAILS
                 # ===========================
 
-                if password != confirm_password:
+                if selected_role == "STUDENT":
 
-                    flash("Passwords do not match.")
+                    student_class = request.form.get(
+                        "class",
+                        ""
+                    ).strip()
 
-                    return redirect(
-                        url_for("register")
-                    )
-
-
-                # ===========================
-                # VALID ROLE
-                # ===========================
-
-                if selected_role not in [
-                    "STUDENT",
-                    "COUNSELLOR"
-                ]:
-
-                    flash("Please select a valid role.")
-
-                    return redirect(
-                        url_for("register")
-                    )
+                    stream = request.form.get(
+                        "stream",
+                        ""
+                    ).strip()
 
 
-                db = get_db_connection()
-                cursor = db.cursor()
+                    if not student_class or not stream:
 
-
-                try:
-
-                    # ===========================
-                    # CHECK EMAIL
-                    # ===========================
-
-                    cursor.execute(
-                        """
-                        SELECT user_id
-                        FROM users
-                        WHERE email = %s
-                        """,
-                        (email,)
-                    )
-
-                    if cursor.fetchone():
-
-                        flash("Email already exists.")
-
-                        return redirect(
-                            url_for("register")
-                        )
-
-
-                    # ===========================
-                    # CHECK USERNAME
-                    # ===========================
-
-                    cursor.execute(
-                        """
-                        SELECT user_id
-                        FROM users
-                        WHERE username = %s
-                        """,
-                        (username,)
-                    )
-
-                    if cursor.fetchone():
-
-                        flash("Username already exists.")
-
-                        return redirect(
-                            url_for("register")
-                        )
-
-
-                    # ===========================
-                    # GET ROLE ID
-                    # ===========================
-
-                    cursor.execute(
-                        """
-                        SELECT role_id
-                        FROM roles
-                        WHERE role = %s
-                        """,
-                        (selected_role,)
-                    )
-
-                    role_data = cursor.fetchone()
-
-
-                    if not role_data:
+                        db.rollback()
 
                         flash(
-                            "Selected role does not exist."
+                            "Please select class and stream."
                         )
 
                         return redirect(
@@ -147,30 +222,76 @@ from routes.database import get_db_connection
                         )
 
 
-                    role_id = role_data[0]
-
-
-                    # ===========================
-                    # HASH PASSWORD
-                    # ===========================
-
-                    password_hash = generate_password_hash(
-                        password
+                    cursor.execute(
+                        """
+                        INSERT INTO student_details
+                        (
+                            user_id,
+                            class,
+                            stream
+                        )
+                        VALUES
+                        (
+                            %s,
+                            %s,
+                            %s
+                        )
+                        """,
+                        (
+                            user_id,
+                            student_class,
+                            stream
+                        )
                     )
 
 
-                    # ===========================
-                    # INSERT INTO USERS
-                    # ===========================
+                # ===========================
+                # COUNSELLOR DETAILS
+                # ===========================
+
+                elif selected_role == "COUNSELLOR":
+
+                    qualification = request.form.get(
+                        "qualification",
+                        ""
+                    ).strip()
+
+                    specialization = request.form.get(
+                        "specialization",
+                        ""
+                    ).strip()
+
+                    experience = request.form.get(
+                        "experience",
+                        "0"
+                    ).strip()
+
+
+                    if not qualification or not specialization:
+
+                        db.rollback()
+
+                        flash(
+                            "Please enter qualification and specialization."
+                        )
+
+                        return redirect(
+                            url_for("register")
+                        )
+
+
+                    if not experience:
+                        experience = 0
+
 
                     cursor.execute(
                         """
-                        INSERT INTO users
+                        INSERT INTO counsellor_details
                         (
-                            username,
-                            email,
-                            password,
-                            role_id
+                            user_id,
+                            qualification,
+                            specialization,
+                            experience
                         )
                         VALUES
                         (
@@ -181,378 +302,274 @@ from routes.database import get_db_connection
                         )
                         """,
                         (
-                            username,
-                            email,
-                            password_hash,
-                            role_id
+                            user_id,
+                            qualification,
+                            specialization,
+                            experience
                         )
                     )
 
-                    user_id = cursor.lastrowid
+
+                # ===========================
+                # SAVE
+                # ===========================
+
+                db.commit()
+
+                flash(
+                    "Registration Successful."
+                )
+
+                return redirect(
+                    url_for("login")
+                )
 
 
-                    # ===========================
-                    # STUDENT DETAILS
-                    # ===========================
+            except mysql.connector.Error as err:
 
-                    if selected_role == "STUDENT":
+                db.rollback()
 
-                        student_class = request.form.get(
-                            "class",
-                            ""
-                        ).strip()
+                print(
+                    "Registration Error:",
+                    err
+                )
 
-                        stream = request.form.get(
-                            "stream",
-                            ""
-                        ).strip()
+                flash(
+                    "Registration failed."
+                )
 
-
-                        if not student_class or not stream:
-
-                            db.rollback()
-
-                            flash(
-                                "Please select class and stream."
-                            )
-
-                            return redirect(
-                                url_for("register")
-                            )
+                return redirect(
+                    url_for("register")
+                )
 
 
-                        cursor.execute(
-                            """
-                            INSERT INTO student_details
-                            (
-                                user_id,
-                                class,
-                                stream
-                            )
-                            VALUES
-                            (
-                                %s,
-                                %s,
-                                %s
-                            )
-                            """,
-                            (
-                                user_id,
-                                student_class,
-                                stream
-                            )
-                        )
+            finally:
+
+                cursor.close()
+                db.close()
 
 
-                    # ===========================
-                    # COUNSELLOR DETAILS
-                    # ===========================
-
-                    elif selected_role == "COUNSELLOR":
-
-                        qualification = request.form.get(
-                            "qualification",
-                            ""
-                        ).strip()
-
-                        specialization = request.form.get(
-                            "specialization",
-                            ""
-                        ).strip()
-
-                        experience = request.form.get(
-                            "experience",
-                            "0"
-                        ).strip()
-
-
-                        if not qualification or not specialization:
-
-                            db.rollback()
-
-                            flash(
-                                "Please enter qualification and specialization."
-                            )
-
-                            return redirect(
-                                url_for("register")
-                            )
-
-
-                        if not experience:
-                            experience = 0
-
-
-                        cursor.execute(
-                            """
-                            INSERT INTO counsellor_details
-                            (
-                                user_id,
-                                qualification,
-                                specialization,
-                                experience
-                            )
-                            VALUES
-                            (
-                                %s,
-                                %s,
-                                %s,
-                                %s
-                            )
-                            """,
-                            (
-                                user_id,
-                                qualification,
-                                specialization,
-                                experience
-                            )
-                        )
-
-
-                    # ===========================
-                    # SAVE
-                    # ===========================
-
-                    db.commit()
-
-                    flash(
-                        "Registration Successful."
-                    )
-
-                    return redirect(
-                        url_for("login")
-                    )
-
-
-                except mysql.connector.Error as err:
-
-                    db.rollback()
-
-                    print(
-                        "Registration Error:",
-                        err
-                    )
-
-                    flash(
-                        "Registration failed."
-                    )
-
-                    return redirect(
-                        url_for("register")
-                    )
-
-
-                finally:
-
-                    cursor.close()
-                    db.close()
-
-
-            return render_template(
-                "register.html"
-            )
+        return render_template(
+            "register.html"
+        )
         # ===========================
     # LOGIN
     # ===========================
 
-        @app.route("/login", methods=["GET", "POST"])
-        def login():
+    @app.route("/login", methods=["GET", "POST"])
+    def login():
 
-            if request.method == "POST":
+        if request.method == "POST":
 
-                username = request.form.get(
-                    "username",
-                    ""
-                ).strip()
+            username = request.form.get(
+                "username",
+                ""
+            ).strip()
 
-                password = request.form.get(
-                    "password",
-                    ""
+            password = request.form.get(
+                "password",
+                ""
+            )
+
+
+            db = get_db_connection()
+            cursor = db.cursor(dictionary=True)
+
+
+            try:
+
+                # ===========================
+                # GET USER + ROLE
+                # ===========================
+
+                cursor.execute(
+                    """
+                    SELECT
+
+                        users.user_id,
+                        users.username,
+                        users.email,
+                        users.password,
+                        users.role_id,
+                        users.is_active,
+                        users.is_deleted,
+
+                        roles.role
+
+                    FROM users
+
+                    INNER JOIN roles
+                        ON users.role_id =
+                        roles.role_id
+
+                    WHERE users.username = %s
+                    """,
+                    (username,)
+                )
+
+                user = cursor.fetchone()
+
+
+            except mysql.connector.Error as err:
+
+                print(
+                    "Login Database Error:",
+                    err
+                )
+
+                flash(
+                    "Login failed. Please try again."
+                )
+
+                cursor.close()
+                db.close()
+
+                return render_template(
+                    "login.html"
                 )
 
 
-                db = get_db_connection()
-                cursor = db.cursor(dictionary=True)
-
+            finally:
 
                 try:
-
-                    # ===========================
-                    # GET USER + ROLE
-                    # ===========================
-
-                    cursor.execute(
-                        """
-                        SELECT
-
-                            users.user_id,
-                            users.username,
-                            users.email,
-                            users.password,
-                            users.role_id,
-                            users.is_active,
-                            users.is_deleted,
-
-                            roles.role
-
-                        FROM users
-
-                        INNER JOIN roles
-                            ON users.role_id =
-                            roles.role_id
-
-                        WHERE users.username = %s
-                        """,
-                        (username,)
-                    )
-
-                    user = cursor.fetchone()
-
-
-                except mysql.connector.Error as err:
-
-                    print(
-                        "Login Database Error:",
-                        err
-                    )
-
-                    flash(
-                        "Login failed. Please try again."
-                    )
-
                     cursor.close()
                     db.close()
-
-                    return render_template(
-                        "login.html"
-                    )
+                except:
+                    pass
 
 
-                finally:
+            # ===========================
+            # USER NOT FOUND
+            # ===========================
 
-                    try:
-                        cursor.close()
-                        db.close()
-                    except:
-                        pass
+            if not user:
 
+                flash(
+                    "Invalid Username or Password."
+                )
 
-                # ===========================
-                # USER NOT FOUND
-                # ===========================
-
-                if not user:
-
-                    flash(
-                        "Invalid Username or Password."
-                    )
-
-                    return render_template(
-                        "login.html"
-                    )
+                return render_template(
+                    "login.html"
+                )
 
 
-                # ===========================
-                # ACCOUNT STATUS
-                # ===========================
+            # ===========================
+            # ACCOUNT STATUS
+            # ===========================
 
-                if not user["is_active"]:
+            if not user["is_active"]:
 
-                    flash(
-                        "Your account is inactive."
-                    )
+                flash(
+                    "Your account is inactive."
+                )
 
-                    return render_template(
-                        "login.html"
-                    )
-
-
-                if user["is_deleted"]:
-
-                    flash(
-                        "Your account has been deleted."
-                    )
-
-                    return render_template(
-                        "login.html"
-                    )
+                return render_template(
+                    "login.html"
+                )
 
 
-                # ===========================
-                # PASSWORD CHECK
-                # ===========================
+            if user["is_deleted"]:
 
-                try:
+                flash(
+                    "Your account has been deleted."
+                )
 
-                    password_valid = check_password_hash(
-                        user["password"],
-                        password
-                    )
-
-                except (ValueError, TypeError):
-
-                    password_valid = False
+                return render_template(
+                    "login.html"
+                )
 
 
-                if not password_valid:
+            # ===========================
+            # PASSWORD CHECK
+            # ===========================
 
-                    flash(
-                        "Invalid Username or Password."
-                    )
+            try:
 
-                    return render_template(
-                        "login.html"
-                    )
+                password_valid = check_password_hash(
+                    user["password"],
+                    password
+                )
+
+            except (ValueError, TypeError):
+
+                password_valid = False
 
 
-                # ===========================
-                # SESSION
-                # ===========================
+            if not password_valid:
+
+                flash(
+                    "Invalid Username or Password."
+                )
+
+                return render_template(
+                    "login.html"
+                )
+
+
+            # ===========================
+            # SESSION
+            # ===========================
+
+            session.clear()
+
+            session["user_id"] = user["user_id"]
+            session["username"] = user["username"]
+            session["email"] = user["email"]
+            session["role"] = user["role"]
+
+
+            # ===========================
+            # ROLE REDIRECTION
+            # ===========================
+
+            if user["role"] == "ADMIN":
+
+                return redirect(
+                    url_for("admin_dashboard")
+                )
+
+
+            elif user["role"] == "COUNSELLOR":
+
+                return redirect(
+                    url_for("counsellor_dashboard")
+                )
+
+
+            elif user["role"] == "STUDENT":
+
+                return redirect(
+                    url_for("student_dashboard")
+                )
+
+
+            else:
 
                 session.clear()
 
-                session["user_id"] = user["user_id"]
-                session["username"] = user["username"]
-                session["email"] = user["email"]
-                session["role"] = user["role"]
+                flash(
+                    "Invalid user role."
+                )
+
+                return redirect(
+                    url_for("login")
+                )
 
 
-                # ===========================
-                # ROLE REDIRECTION
-                # ===========================
+        return render_template(
+            "login.html"
+        )
+        # ===========================
+    # LOGOUT
+    # ===========================
 
-                if user["role"] == "ADMIN":
+    @app.route("/logout")
+    def logout():
 
-                    return redirect(
-                        url_for("admin_dashboard")
-                    )
+        session.clear()
 
+        flash("Logged out successfully.")
 
-                elif user["role"] == "COUNSELLOR":
-
-                    return redirect(
-                        url_for("counsellor_dashboard")
-                    )
-
-
-                elif user["role"] == "STUDENT":
-
-                    return redirect(
-                        url_for("student_dashboard")
-                    )
-
-
-                else:
-
-                    session.clear()
-
-                    flash(
-                        "Invalid user role."
-                    )
-
-                    return redirect(
-                        url_for("login")
-                    )
-
-
-            return render_template("login.html")
+        return redirect(
+            url_for("home")
+        )
