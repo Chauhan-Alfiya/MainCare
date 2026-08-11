@@ -3190,7 +3190,7 @@ def profile():
             user=user,
             role=role
         )
-
+ 
     except mysql.connector.Error as err:
 
         db.rollback()
