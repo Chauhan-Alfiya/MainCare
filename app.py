@@ -444,24 +444,16 @@ def register():
 
     if request.method == "POST":
 
-        # ===========================
         # FORM DATA
-        # ===========================
-
         username = request.form.get("username", "").strip()
         email = request.form.get("email", "").strip()
         selected_role = request.form.get("role", "").strip()
-
         password = request.form.get("password", "")
         confirm_password = request.form.get(
             "confirm_password",
             ""
         )
-
-
-        # ===========================
         # REQUIRED FIELDS
-        # ===========================
 
         if not username or not email or not selected_role:
 
@@ -471,45 +463,30 @@ def register():
                 url_for("register")
             )
 
-
-        # ===========================
         # PASSWORD MATCH
-        # ===========================
 
         if password != confirm_password:
-
             flash("Passwords do not match.")
-
             return redirect(
                 url_for("register")
             )
 
-
-        # ===========================
         # VALID ROLE
-        # ===========================
 
         if selected_role not in [
             "STUDENT",
             "COUNSELLOR"
         ]:
-
             flash("Please select a valid role.")
-
             return redirect(
                 url_for("register")
             )
 
-
         db = get_db_connection()
         cursor = db.cursor()
 
-
         try:
-
-            # ===========================
             # CHECK EMAIL
-            # ===========================
 
             cursor.execute(
                 """
@@ -519,19 +496,12 @@ def register():
                 """,
                 (email,)
             )
-
             if cursor.fetchone():
-
                 flash("Email already exists.")
-
                 return redirect(
                     url_for("register")
                 )
-
-
-            # ===========================
             # CHECK USERNAME
-            # ===========================
 
             cursor.execute(
                 """
@@ -541,19 +511,13 @@ def register():
                 """,
                 (username,)
             )
-
             if cursor.fetchone():
-
                 flash("Username already exists.")
-
                 return redirect(
                     url_for("register")
                 )
 
-
-            # ===========================
             # GET ROLE ID
-            # ===========================
 
             cursor.execute(
                 """
@@ -563,36 +527,25 @@ def register():
                 """,
                 (selected_role,)
             )
-
             role_data = cursor.fetchone()
 
-
             if not role_data:
-
                 flash(
                     "Selected role does not exist."
                 )
-
                 return redirect(
                     url_for("register")
                 )
 
-
             role_id = role_data[0]
 
-
-            # ===========================
             # HASH PASSWORD
-            # ===========================
 
             password_hash = generate_password_hash(
                 password
             )
 
-
-            # ===========================
             # INSERT INTO USERS
-            # ===========================
 
             cursor.execute(
                 """
@@ -621,37 +574,25 @@ def register():
 
             user_id = cursor.lastrowid
 
-
-            # ===========================
             # STUDENT DETAILS
-            # ===========================
 
             if selected_role == "STUDENT":
-
                 student_class = request.form.get(
                     "class",
                     ""
                 ).strip()
-
                 stream = request.form.get(
                     "stream",
                     ""
                 ).strip()
-
-
                 if not student_class or not stream:
-
                     db.rollback()
-
                     flash(
                         "Please select class and stream."
                     )
-
                     return redirect(
                         url_for("register")
                     )
-
-
                 cursor.execute(
                     """
                     INSERT INTO student_details
@@ -674,46 +615,31 @@ def register():
                     )
                 )
 
-
-            # ===========================
             # COUNSELLOR DETAILS
-            # ===========================
 
             elif selected_role == "COUNSELLOR":
-
                 qualification = request.form.get(
                     "qualification",
                     ""
                 ).strip()
-
                 specialization = request.form.get(
                     "specialization",
                     ""
                 ).strip()
-
                 experience = request.form.get(
                     "experience",
                     "0"
                 ).strip()
-
-
                 if not qualification or not specialization:
-
                     db.rollback()
-
                     flash(
                         "Please enter qualification and specialization."
                     )
-
                     return redirect(
                         url_for("register")
                     )
-
-
                 if not experience:
                     experience = 0
-
-
                 cursor.execute(
                     """
                     INSERT INTO counsellor_details
@@ -739,50 +665,34 @@ def register():
                     )
                 )
 
-
-            # ===========================
             # SAVE
-            # ===========================
 
             db.commit()
-
             flash(
                 "Registration Successful."
             )
-
             return redirect(
                 url_for("login")
             )
-
-
         except mysql.connector.Error as err:
-
             db.rollback()
-
             print(
                 "Registration Error:",
                 err
             )
-
             flash(
                 "Registration failed."
             )
-
             return redirect(
                 url_for("register")
             )
-
-
         finally:
-
             cursor.close()
             db.close()
-
-
     return render_template(
         "register.html"
     )
-    # ===========================
+# ===========================
 # LOGIN
 # ===========================
 

@@ -2671,72 +2671,546 @@ def delete_resource(resource_id):
     flash("Deleted")
 
     return redirect(url_for("resources"))
-    # ===========================
+    
+# ============================================================
 # PROFILE
-# ===========================
+# STUDENT + COUNSELLOR + ADMIN
+# ============================================================
 
-@app.route("/profile")
+@app.route("/profile", methods=["GET", "POST"])
 def profile():
+
+    # --------------------------------------------------------
+    # LOGIN CHECK
+    # --------------------------------------------------------
 
     if "user_id" not in session:
         return redirect(url_for("login"))
 
+    user_id = session["user_id"]
+
     db = get_db_connection()
     cursor = db.cursor(dictionary=True)
 
-    role = session.get("role")
+    try:
 
-    if role == "STUDENT":
+        # ====================================================
+        # UPDATE PROFILE
+        # ====================================================
 
-        cursor.execute("""
-            SELECT
-                u.username,
-                u.email,
-                u.created_at,
-                s.class,
-                s.stream
-            FROM users u
-            INNER JOIN student_details s
-            ON u.user_id=s.user_id
-            WHERE u.user_id=%s
-        """,(session["user_id"],))
+        if request.method == "POST" and request.form.get("update_profile"):
 
-    elif role == "COUNSELLOR":
+            name = request.form.get("name", "").strip()
+            email = request.form.get("email", "").strip()
 
-        cursor.execute("""
-            SELECT
-                u.username,
-                u.email,
-                u.created_at,
-                c.qualification,
-                c.specialization,
-                c.experience
-            FROM users u
-            INNER JOIN counsellor_details c
-            ON u.user_id=c.user_id
-            WHERE u.user_id=%s
-        """,(session["user_id"],))
+            # ------------------------------------------------
+            # REQUIRED FIELDS
+            # ------------------------------------------------
 
-    else:
+            if not name or not email:
 
-        cursor.execute("""
-            SELECT
-                username,
+                flash(
+                    "Name and email are required.",
+                    "danger"
+                )
+
+                return redirect(url_for("profile"))
+
+            # ------------------------------------------------
+            # CHECK EMAIL
+            # ------------------------------------------------
+
+            cursor.execute("""
+                SELECT user_id
+                FROM users
+                WHERE email = %s
+                AND user_id != %s
+            """, (
                 email,
-                created_at
-            FROM users
-            WHERE user_id=%s
-        """,(session["user_id"],))
+                user_id
+            ))
 
-    user = cursor.fetchone()
+            existing_email = cursor.fetchone()
 
-    cursor.close()
-    db.close()
+            if existing_email:
 
-    return render_template(
-        "profile.html",
-        user=user
-    )
+                flash(
+                    "This email is already registered.",
+                    "danger"
+                )
+
+                return redirect(url_for("profile"))
+
+            # ------------------------------------------------
+            # UPDATE BASIC USER INFORMATION
+            # ------------------------------------------------
+
+            cursor.execute("""
+                UPDATE users
+                SET
+                    username = %s,
+                    email = %s
+                WHERE user_id = %s
+            """, (
+                name,
+                email,
+                user_id
+            ))
+
+            # =================================================
+            # GET ROLE
+            # =================================================
+
+            cursor.execute("""
+                SELECT r.role
+                FROM users u
+
+                INNER JOIN roles r
+                    ON u.role_id = r.role_id
+
+                WHERE u.user_id = %s
+            """, (user_id,))
+
+            role_data = cursor.fetchone()
+
+            if not role_data:
+
+                db.rollback()
+
+                flash(
+                    "User role could not be found.",
+                    "danger"
+                )
+
+                return redirect(url_for("profile"))
+
+            role = role_data["role"].upper()
+
+            # =================================================
+            # STUDENT PROFILE
+            # =================================================
+
+            if role == "STUDENT":
+
+                student_class = request.form.get(
+                    "class",
+                    ""
+                ).strip()
+
+                stream = request.form.get(
+                    "stream",
+                    ""
+                ).strip()
+
+                if not student_class or not stream:
+
+                    db.rollback()
+
+                    flash(
+                        "Please select class and stream.",
+                        "danger"
+                    )
+
+                    return redirect(url_for("profile"))
+
+                # Check whether details already exist
+                cursor.execute("""
+                    SELECT user_id
+                    FROM student_details
+                    WHERE user_id = %s
+                """, (user_id,))
+
+                student_exists = cursor.fetchone()
+
+                if student_exists:
+
+                    cursor.execute("""
+                        UPDATE student_details
+
+                        SET
+                            class = %s,
+                            stream = %s
+
+                        WHERE user_id = %s
+                    """, (
+                        student_class,
+                        stream,
+                        user_id
+                    ))
+
+                else:
+
+                    cursor.execute("""
+                        INSERT INTO student_details
+                        (
+                            user_id,
+                            class,
+                            stream
+                        )
+
+                        VALUES
+                        (
+                            %s,
+                            %s,
+                            %s
+                        )
+                    """, (
+                        user_id,
+                        student_class,
+                        stream
+                    ))
+
+            # =================================================
+            # COUNSELLOR PROFILE
+            # =================================================
+
+            elif role == "COUNSELLOR":
+
+                qualification = request.form.get(
+                    "qualification",
+                    ""
+                ).strip()
+
+                specialization = request.form.get(
+                    "specialization",
+                    ""
+                ).strip()
+
+                experience = request.form.get(
+                    "experience",
+                    ""
+                ).strip()
+
+                # Empty experience = 0
+                if not experience:
+                    experience = 0
+
+                # Check whether details already exist
+                cursor.execute("""
+                    SELECT user_id
+                    FROM counsellor_details
+                    WHERE user_id = %s
+                """, (user_id,))
+
+                counsellor_exists = cursor.fetchone()
+
+                if counsellor_exists:
+
+                    cursor.execute("""
+                        UPDATE counsellor_details
+
+                        SET
+                            qualification = %s,
+                            specialization = %s,
+                            experience = %s
+
+                        WHERE user_id = %s
+                    """, (
+                        qualification,
+                        specialization,
+                        experience,
+                        user_id
+                    ))
+
+                else:
+
+                    cursor.execute("""
+                        INSERT INTO counsellor_details
+                        (
+                            user_id,
+                            qualification,
+                            specialization,
+                            experience
+                        )
+
+                        VALUES
+                        (
+                            %s,
+                            %s,
+                            %s,
+                            %s
+                        )
+                    """, (
+                        user_id,
+                        qualification,
+                        specialization,
+                        experience
+                    ))
+
+            # =================================================
+            # SAVE CHANGES
+            # =================================================
+
+            db.commit()
+
+            # Update session information
+            session["username"] = name
+            session["email"] = email
+
+            flash(
+                "Profile updated successfully.",
+                "success"
+            )
+
+            return redirect(url_for("profile"))
+
+        # ====================================================
+        # CHANGE PASSWORD
+        # ====================================================
+
+        if request.method == "POST" and request.form.get("change_password"):
+
+            current_password = request.form.get(
+                "current_password",
+                ""
+            )
+
+            new_password = request.form.get(
+                "new_password",
+                ""
+            )
+
+            confirm_password = request.form.get(
+                "confirm_password",
+                ""
+            )
+
+            # ------------------------------------------------
+            # REQUIRED
+            # ------------------------------------------------
+
+            if not current_password or not new_password or not confirm_password:
+
+                flash(
+                    "Please fill all password fields.",
+                    "danger"
+                )
+
+                return redirect(url_for("profile"))
+
+            # ------------------------------------------------
+            # PASSWORD MATCH
+            # ------------------------------------------------
+
+            if new_password != confirm_password:
+
+                flash(
+                    "New password and confirm password do not match.",
+                    "danger"
+                )
+
+                return redirect(url_for("profile"))
+
+            # ------------------------------------------------
+            # PASSWORD LENGTH
+            # ------------------------------------------------
+
+            if len(new_password) < 6:
+
+                flash(
+                    "New password must contain at least 6 characters.",
+                    "danger"
+                )
+
+                return redirect(url_for("profile"))
+
+            # ------------------------------------------------
+            # GET OLD PASSWORD
+            # ------------------------------------------------
+
+            cursor.execute("""
+                SELECT password
+                FROM users
+                WHERE user_id = %s
+            """, (user_id,))
+
+            password_data = cursor.fetchone()
+
+            if not password_data:
+
+                flash(
+                    "User account not found.",
+                    "danger"
+                )
+
+                return redirect(url_for("login"))
+
+            stored_password = password_data["password"]
+
+            # ------------------------------------------------
+            # CHECK CURRENT PASSWORD
+            # ------------------------------------------------
+
+            try:
+
+                password_valid = check_password_hash(
+                    stored_password,
+                    current_password
+                )
+
+            except (ValueError, TypeError):
+
+                password_valid = False
+
+            if not password_valid:
+
+                flash(
+                    "Current password is incorrect.",
+                    "danger"
+                )
+
+                return redirect(url_for("profile"))
+
+            # ------------------------------------------------
+            # HASH NEW PASSWORD
+            # ------------------------------------------------
+
+            hashed_password = generate_password_hash(
+                new_password
+            )
+
+            cursor.execute("""
+                UPDATE users
+
+                SET password = %s
+
+                WHERE user_id = %s
+            """, (
+                hashed_password,
+                user_id
+            ))
+
+            db.commit()
+
+            flash(
+                "Password updated successfully.",
+                "success"
+            )
+
+            return redirect(url_for("profile"))
+
+        # ====================================================
+        # DELETE ACCOUNT
+        # ====================================================
+
+        if request.method == "POST" and request.form.get("delete_account"):
+
+            # ------------------------------------------------
+            # SOFT DELETE
+            # ------------------------------------------------
+            # We do NOT physically delete the user because
+            # appointments and other records may depend on it.
+
+            cursor.execute("""
+                UPDATE users
+
+                SET
+                    is_active = FALSE,
+                    is_deleted = TRUE
+
+                WHERE user_id = %s
+            """, (user_id,))
+
+            db.commit()
+
+            # Clear session
+            session.clear()
+
+            flash(
+                "Your MindCare account has been deleted.",
+                "success"
+            )
+
+            return redirect(url_for("login"))
+
+        # ====================================================
+        # GET COMPLETE PROFILE
+        # ====================================================
+
+        cursor.execute("""
+            SELECT
+
+                u.user_id,
+                u.username,
+                u.email,
+                u.created_at,
+                u.is_active,
+                u.is_deleted,
+
+                r.role,
+
+                sd.class,
+                sd.stream,
+
+                cd.qualification,
+                cd.specialization,
+                cd.experience
+
+            FROM users u
+
+            INNER JOIN roles r
+                ON u.role_id = r.role_id
+
+            LEFT JOIN student_details sd
+                ON u.user_id = sd.user_id
+
+            LEFT JOIN counsellor_details cd
+                ON u.user_id = cd.user_id
+
+            WHERE u.user_id = %s
+
+            LIMIT 1
+        """, (user_id,))
+
+        user = cursor.fetchone()
+
+        if not user:
+
+            flash(
+                "User account not found.",
+                "danger"
+            )
+
+            return redirect(url_for("login"))
+
+        # ----------------------------------------------------
+        # ROLE
+        # ----------------------------------------------------
+
+        role = str(
+            user.get("role") or "STUDENT"
+        ).upper()
+
+        # ----------------------------------------------------
+        # RENDER PROFILE
+        # ----------------------------------------------------
+
+        return render_template(
+            "profile.html",
+            user=user,
+            role=role
+        )
+ 
+    except mysql.connector.Error as err:
+
+        db.rollback()
+
+        print(
+            "PROFILE DATABASE ERROR:",
+            err
+        )
+
+        flash(
+            "Something went wrong while updating your profile.",
+            "danger"
+        )
+
+        return redirect(url_for("profile"))
+
+    finally:
+
+        cursor.close()
+        db.close()
 # ===========================
 # LOGOUT
 # ===========================
@@ -2753,15 +3227,7 @@ def logout():
     )
 
 
-# ===========================
-# RUN APPLICATION
-# ===========================
 
-if __name__ == "__main__":
-
-    app.run(
-        debug=True
-    )
 # ===========================
 # RUN APPLICATION
 # ===========================
