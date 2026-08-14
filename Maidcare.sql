@@ -67,7 +67,8 @@ CREATE TABLE assessments(
     user_id INT NOT NULL,
     assessment_type ENUM(
         'PHQ-9',
-        'GAD-7'
+        'GAD-7',
+        'MindCare Quick Assessment'
     ) NOT NULL,
     score INT NOT NULL,
     risk_level VARCHAR(50),
@@ -170,6 +171,28 @@ CREATE TABLE wellness_tracker(
     FOREIGN KEY(user_id)
     REFERENCES users(user_id)
     ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+-- COUNSELLOR CHAT
+CREATE TABLE counsellor_chat (
+    chat_id INT AUTO_INCREMENT PRIMARY KEY,
+
+    student_id INT NOT NULL,
+    counsellor_id INT NOT NULL,
+
+    sender_role ENUM('STUDENT', 'COUNSELLOR') NOT NULL,
+
+    message TEXT NOT NULL,
+
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+
+    FOREIGN KEY (student_id)
+        REFERENCES users(user_id)
+        ON DELETE CASCADE,
+
+    FOREIGN KEY (counsellor_id)
+        REFERENCES users(user_id)
+        ON DELETE CASCADE
+
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
 COMMIT;

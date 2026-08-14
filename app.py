@@ -23,9 +23,6 @@ def get_db_connection():
         password="",
         database="mindcare"
     )
-@app.route("/assessment")
-def assessment():
-    return render_template("assessment.html")
 
 # ===========================
 # HOME PAGE
@@ -435,7 +432,7 @@ def appointment():
         counsellors=counsellors,
         today=today
     )
-    # ===========================
+# ===========================
 # REGISTER
 # ===========================
 
@@ -3121,6 +3118,260 @@ def profile():
 
         cursor.close()
         db.close()
+# ===========================
+# MINDCARE ASSESSMENT
+# ===========================
+
+@app.route("/assessment", methods=["GET", "POST"])
+def assessment():
+
+    # ===========================
+    # LOGIN CHECK
+    # ===========================
+
+    if "user_id" not in session:
+        return redirect(url_for("login"))
+
+    # ===========================
+    # STUDENT ONLY
+    # ===========================
+
+    if session.get("role") != "STUDENT":
+        return redirect(url_for("dashboard_redirect"))
+
+    # ===========================
+    # 5 ASSESSMENT QUESTIONS
+    # ===========================
+
+    questions = [
+
+        {
+            "id": 1,
+            "question": "How often do you feel stressed because of your studies?"
+        },
+
+        {
+            "id": 2,
+            "question": "How often do you feel worried or nervous?"
+        },
+
+        {
+            "id": 3,
+            "question": "How often do you have difficulty sleeping or resting?"
+        },
+
+        {
+            "id": 4,
+            "question": "How often do you feel sad or lose interest in things you enjoy?"
+        },
+
+        {
+            "id": 5,
+            "question": "How often do you feel that your problems are difficult to manage?"
+        }
+
+    ]
+
+    # ===========================
+    # ANSWER OPTIONS
+    # ===========================
+
+    options = [
+
+        {
+            "value": 0,
+            "text": "Never"
+        },
+
+        {
+            "value": 1,
+            "text": "Sometimes"
+        },
+
+        {
+            "value": 2,
+            "text": "Often"
+        },
+
+        {
+            "value": 3,
+            "text": "Very Often"
+        }
+
+    ]
+
+    # ===========================
+    # SUBMIT ASSESSMENT
+    # ===========================
+
+    if request.method == "POST":
+
+        total_score = 0
+
+        # ===========================
+        # CHECK ALL ANSWERS
+        # ===========================
+
+        for question in questions:
+
+            answer = request.form.get(
+                f"q{question['id']}"
+            )
+
+            if answer is None:
+
+                flash(
+                    "Please answer all questions.",
+                    "warning"
+                )
+
+                return redirect(
+                    url_for("assessment")
+                )
+
+            try:
+
+                answer = int(answer)
+
+            except ValueError:
+
+                flash(
+                    "Invalid assessment response.",
+                    "danger"
+                )
+
+                return redirect(
+                    url_for("assessment")
+                )
+
+            # Make sure answer is between 0 and 3
+
+            if answer < 0 or answer > 3:
+
+                flash(
+                    "Invalid assessment response.",
+                    "danger"
+                )
+
+                return redirect(
+                    url_for("assessment")
+                )
+
+            total_score += answer
+
+        # ===========================
+        # DETERMINE RESULT
+        # ===========================
+
+        if total_score <= 4:
+
+            risk_level = "Healthy"
+
+            recommendation = (
+                "Your responses indicate that you are "
+                "currently doing well. Continue taking "
+                "care of your mental wellness."
+            )
+
+            support_required = False
+
+        else:
+
+            risk_level = "Needs Support"
+
+            recommendation = (
+                "Your responses indicate that you may "
+                "be experiencing some emotional or "
+                "mental health difficulties. Talking "
+                "with a counsellor may be helpful."
+            )
+
+            support_required = True
+
+        # ===========================
+        # SAVE RESULT
+        # ===========================
+
+        db = get_db_connection()
+        cursor = db.cursor()
+
+        try:
+
+            cursor.execute(
+                """
+                INSERT INTO assessments
+                (
+                    user_id,
+                    assessment_type,
+                    score,
+                    risk_level,
+                    recommendation
+                )
+                VALUES
+                (
+                    %s,
+                    %s,
+                    %s,
+                    %s,
+                    %s
+                )
+                """,
+                (
+                    session["user_id"],
+                    "MindCare Quick Assessment",
+                    total_score,
+                    risk_level,
+                    recommendation
+                )
+            )
+
+            db.commit()
+
+        except mysql.connector.Error as err:
+
+            db.rollback()
+
+            print(
+                "Assessment Database Error:",
+                err
+            )
+
+            flash(
+                "Unable to save assessment result.",
+                "danger"
+            )
+
+            return redirect(
+                url_for("assessment")
+            )
+
+        finally:
+
+            cursor.close()
+            db.close()
+
+        # ===========================
+        # SHOW RESULT
+        # ===========================
+
+        return render_template(
+            "assessment_result.html",
+            score=total_score,
+            max_score=15,
+            risk_level=risk_level,
+            recommendation=recommendation,
+            support_required=support_required
+        )
+
+    # ===========================
+    # SHOW QUESTIONS
+    # ===========================
+
+    return render_template(
+        "assessment.html",
+        questions=questions,
+        options=options
+    )
 # ===========================
 # LOGOUT
 # ===========================
