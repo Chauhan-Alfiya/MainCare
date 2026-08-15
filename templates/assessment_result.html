@@ -248,59 +248,46 @@
 
             {% if support_required %}
 
-                <div class="alert alert-warning text-start">
+    <div class="alert alert-warning text-start">
 
-                    <strong>
+        <strong>
+            <i class="bi bi-chat-heart me-2"></i>
+            Counsellor Support Recommended
+        </strong>
 
-                        <i class="bi bi-chat-heart me-2"></i>
+        <p class="mb-0 mt-2">
+            Your assessment score suggests that speaking
+            with a counsellor may be helpful.
+        </p>
 
-                        Support Recommended
+    </div>
 
-                    </strong>
+    <a
+        href="{{ url_for('counsellors') }}"
+        class="btn btn-main">
 
-                    <p class="mb-0 mt-2">
+        <i class="bi bi-person-heart me-2"></i>
+        Find a Counsellor
 
-                        Based on your responses, you can
-                        continue to counselling support.
+    </a>
 
-                    </p>
+{% else %}
 
-                </div>
+    <div class="alert alert-success text-start">
 
+        <strong>
+            <i class="bi bi-check-circle me-2"></i>
+            You are doing well
+        </strong>
 
-                <a
-                    href="{{ url_for('counsellors') }}"
-                    class="btn btn-main">
+        <p class="mb-0 mt-2">
+            Continue taking care of your mental wellness
+            and maintain healthy habits.
+        </p>
 
-                    <i class="bi bi-person-heart me-2"></i>
+    </div>
 
-                    View Counsellors
-
-                </a>
-
-            {% else %}
-
-                <div class="alert alert-success text-start">
-
-                    <strong>
-
-                        <i class="bi bi-check-circle me-2"></i>
-
-                        You are doing well
-
-                    </strong>
-
-                    <p class="mb-0 mt-2">
-
-                        Continue taking care of your
-                        mental wellness and maintain
-                        healthy habits.
-
-                    </p>
-
-                </div>
-
-            {% endif %}
+{% endif %}
 
 
             <div class="mt-4">
