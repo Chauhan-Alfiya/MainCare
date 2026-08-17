@@ -14,7 +14,6 @@ VALUES
 ('STUDENT'),
 ('COUNSELLOR');
 
-
 -- USERS TABLE
 CREATE TABLE users (
 
