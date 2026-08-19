@@ -336,7 +336,7 @@ border-radius:0;
         STUDENT MENU
 =========================================== -->
 
-{% if session.get('role') == "STUDENT" %}
+{% if session['role'] == 'STUDENT' %}
 
 <a href="{{ url_for('student_dashboard') }}" class="sidebar-link">
 
@@ -457,25 +457,14 @@ border-radius:0;
         <i class="bi bi-chevron-right"></i>
     </div>
 </a>
-<a href="{{ url_for('counsellor_chat) }}" class="sidebar-link">
 
-    <div class="sidebar-left">
-        <i class="bi bi-person-circle"></i>
-        <span>Chat</span>
-    </div>
-
-    <div class="sidebar-right">
-        <i class="bi bi-chevron-right"></i>
-    </div>
-
-</a>
 
 {% endif %}
 <!-- ==========================================
         COUNSELLOR MENU
 =========================================== -->
 
-{% if session.get('role') == "COUNSELLOR" %}
+{% if session.get("role") == "COUNSELLOR" %}
 
 <a href="{{ url_for('counsellor_dashboard') }}" class="sidebar-link">
 
@@ -551,7 +540,7 @@ border-radius:0;
         ADMIN MENU
 =========================================== -->
 
-{% if session.get('role') == "ADMIN" %}
+{% if session['role'] == 'ADMIN' %}
 
 <a href="{{ url_for('admin_dashboard') }}" class="sidebar-link">
 
