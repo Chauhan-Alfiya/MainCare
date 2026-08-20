@@ -689,6 +689,7 @@ def register():
     return render_template(
         "register.html"
     )
+
 # ===========================
 # LOGIN
 # ===========================
@@ -697,32 +698,19 @@ def register():
 def login():
 
     if request.method == "POST":
-
-        username = request.form.get(
-            "username",
-            ""
-        ).strip()
-
-        password = request.form.get(
-            "password",
-            ""
-        )
-
+        username = request.form.get("username","").strip()
+        password = request.form.get("password","")
 
         db = get_db_connection()
         cursor = db.cursor(dictionary=True)
 
-
         try:
-
             # ===========================
             # GET USER + ROLE
             # ===========================
-
             cursor.execute(
                 """
                 SELECT
-
                     users.user_id,
                     users.username,
                     users.email,
@@ -730,81 +718,58 @@ def login():
                     users.role_id,
                     users.is_active,
                     users.is_deleted,
-
                     roles.role
-
                 FROM users
-
                 INNER JOIN roles
                     ON users.role_id =
                        roles.role_id
-
                 WHERE users.username = %s
                 """,
                 (username,)
             )
-
             user = cursor.fetchone()
-
-
         except mysql.connector.Error as err:
-
             print(
                 "Login Database Error:",
                 err
             )
-
             flash(
                 "Login failed. Please try again."
             )
-
             cursor.close()
             db.close()
-
             return render_template(
                 "login.html"
             )
-
-
+        
         finally:
-
             try:
                 cursor.close()
                 db.close()
             except:
                 pass
 
-
         # ===========================
         # USER NOT FOUND
         # ===========================
-
         if not user:
-
             flash(
                 "Invalid Username or Password."
             )
-
             return render_template(
                 "login.html"
             )
-
 
         # ===========================
         # ACCOUNT STATUS
         # ===========================
-
         if not user["is_active"]:
-
             flash(
                 "Your account is inactive."
             )
-
             return render_template(
                 "login.html"
             )
-
-
         if user["is_deleted"]:
 
             flash(
@@ -814,89 +779,56 @@ def login():
             return render_template(
                 "login.html"
             )
-
-
         # ===========================
         # PASSWORD CHECK
         # ===========================
-
         try:
-
-            password_valid = check_password_hash(
-                user["password"],
-                password
-            )
-
+            password_valid = check_password_hash(user["password"],password)
         except (ValueError, TypeError):
-
             password_valid = False
-
-
         if not password_valid:
-
             flash(
                 "Invalid Username or Password."
             )
-
             return render_template(
                 "login.html"
             )
-
-
         # ===========================
         # SESSION
         # ===========================
-
         session.clear()
-
         session["user_id"] = user["user_id"]
         session["username"] = user["username"]
         session["email"] = user["email"]
         session["role"] = user["role"]
-
-
         # ===========================
         # ROLE REDIRECTION
         # ===========================
-
         if user["role"] == "ADMIN":
-
             return redirect(
                 url_for("admin_dashboard")
             )
-
-
         elif user["role"] == "COUNSELLOR":
-
             return redirect(
                 url_for("counsellor_dashboard")
             )
-
-
         elif user["role"] == "STUDENT":
-
             return redirect(
                 url_for("student_dashboard")
             )
-
-
         else:
-
             session.clear()
-
             flash(
                 "Invalid user role."
             )
-
             return redirect(
                 url_for("login")
             )
-
-
     return render_template(
         "login.html"
     )
-    # ===========================
+
+# ===========================
 # STUDENT DASHBOARD
 # ===========================
 
