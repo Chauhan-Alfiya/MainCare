@@ -511,6 +511,150 @@ Under monitoring
 
 
 </section>
+<!-- ===========================
+     STUDENT CHAT SUPPORT
+=========================== -->
+
+<section class="container pb-5">
+
+    <div class="dashboard-card p-4">
+
+        <div class="d-flex justify-content-between align-items-center mb-4">
+
+            <div>
+                <h4 class="fw-bold mb-1" style="color:#06232d;">
+                    <i class="bi bi-chat-heart me-2"
+                       style="color:#0e4a5c;"></i>
+                    Student Chat Support
+                </h4>
+
+                <p class="text-muted mb-0">
+                    View and respond to students who need counselling support.
+                </p>
+            </div>
+
+            <span class="badge rounded-pill px-3 py-2"
+                  style="background:#e7f7f3;color:#0f766e;">
+                <i class="bi bi-chat-dots me-1"></i>
+                Confidential
+            </span>
+
+        </div>
+
+
+        {% if chat_students %}
+
+            <div class="row g-3">
+
+                {% for student in chat_students %}
+
+                <div class="col-md-6 col-lg-4">
+
+                    <div class="border rounded-4 p-3 h-100">
+
+                        <div class="d-flex align-items-center mb-3">
+
+                            <div
+                                style="
+                                width:48px;
+                                height:48px;
+                                border-radius:50%;
+                                background:#0e4a5c;
+                                color:white;
+                                display:flex;
+                                align-items:center;
+                                justify-content:center;
+                                font-weight:700;
+                                font-size:18px;
+                                ">
+
+                                {{ student.username[0]|upper }}
+
+                            </div>
+
+
+                            <div class="ms-3">
+
+                                <h6 class="fw-bold mb-1">
+                                    {{ student.username }}
+                                </h6>
+
+                                <small class="text-muted">
+                                    Student
+                                </small>
+
+                            </div>
+
+                        </div>
+
+
+                        <a
+                            href="{{ url_for(
+                                'counsellor_chat',
+                                counsellor_id=counsellor.user_id,
+                                student_id=student.user_id
+                            ) }}"
+                            class="btn w-100"
+                            style="
+                            background:#0e4a5c;
+                            color:white;
+                            border-radius:9px;
+                            ">
+
+                            <i class="bi bi-chat-left-text me-2"></i>
+
+                            Open Chat
+
+                        </a>
+
+                    </div>
+
+                </div>
+
+                {% endfor %}
+
+            </div>
+
+        {% else %}
+
+            <div class="text-center py-4">
+
+                <div
+                    style="
+                    width:65px;
+                    height:65px;
+                    border-radius:50%;
+                    background:#f0f4f8;
+                    display:flex;
+                    align-items:center;
+                    justify-content:center;
+                    margin:auto;
+                    ">
+
+                    <i class="bi bi-chat-dots"
+                       style="
+                       font-size:28px;
+                       color:#64748b;
+                       "></i>
+
+                </div>
+
+                <h6 class="fw-bold mt-3">
+                    No Student Chats Yet
+                </h6>
+
+                <p class="text-muted mb-0">
+                    Students who choose counsellor chat after their
+                    assessment will appear here.
+                </p>
+
+            </div>
+
+        {% endif %}
+
+    </div>
+
+</section>
 {%include 'includes/footer.html'%}
 {% include 'includes/sidebar.html' %}
 

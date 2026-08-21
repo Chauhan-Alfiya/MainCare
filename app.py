@@ -1483,6 +1483,31 @@ def counsellor_dashboard():
         """, (counsellor_id,))
 
         appointments = cursor.fetchall()
+         # ===========================
+                # STUDENTS WITH CHAT
+                # ===========================
+        
+        cursor.execute("""
+                    SELECT DISTINCT
+                        u.user_id,
+                        u.username,
+                        u.email,
+                        s.class,
+                        s.stream
+                    FROM counsellor_chat cc
+        
+                    INNER JOIN users u
+                        ON cc.student_id = u.user_id
+        
+                    LEFT JOIN student_details s
+                        ON u.user_id = s.user_id
+        
+                    WHERE cc.counsellor_id = %s
+        
+                    ORDER BY cc.created_at DESC
+                """, (counsellor_id,))
+        
+        chat_students = cursor.fetchall()
 
     except mysql.connector.Error as err:
 
@@ -1503,6 +1528,7 @@ def counsellor_dashboard():
 
         cursor.close()
         db.close()
+                
 
     # ===========================
     # COUNSELLOR PROFILE CHECK
@@ -1523,13 +1549,11 @@ def counsellor_dashboard():
     # ===========================
 
     return render_template(
-        "counsellor_dashboard.html",
-
-        counsellor=counsellor,
-
-        stats=stats,
-
-        appointments=appointments
+    "counsellor_dashboard.html",
+    counsellor=counsellor,
+    stats=stats,
+    appointments=appointments,
+    chat_students=chat_students
     )
     # ===========================
 # APPROVE APPOINTMENT
@@ -3798,6 +3822,253 @@ def counsellor_chat(counsellor_id):
 
         cursor.close()
         db.close()
+        # ============================================================
+# COUNSELLOR -> STUDENT CHAT
+# ============================================================
+
+@app.route("/counsellor/chat/<int:student_id>", methods=["GET", "POST"])
+def counsellor_chat_student(student_id):
+
+    # --------------------------------------------------------
+    # LOGIN CHECK
+    # --------------------------------------------------------
+
+    if "user_id" not in session:
+        return redirect(url_for("login"))
+
+    counsellor_id = session["user_id"]
+
+    if session.get("role") != "COUNSELLOR":
+        return redirect(url_for("dashboard_redirect"))
+
+    db = get_db_connection()
+    cursor = db.cursor(dictionary=True)
+
+    try:
+
+        # ----------------------------------------------------
+        # GET STUDENT
+        # ----------------------------------------------------
+
+        cursor.execute("""
+            SELECT
+                u.user_id,
+                u.username,
+                u.email,
+                s.class,
+                s.stream
+            FROM users u
+
+            INNER JOIN roles r
+                ON u.role_id = r.role_id
+
+            LEFT JOIN student_details s
+                ON u.user_id = s.user_id
+
+            WHERE u.user_id = %s
+              AND r.role = 'STUDENT'
+              AND u.is_active = TRUE
+              AND u.is_deleted = FALSE
+
+            LIMIT 1
+        """, (student_id,))
+
+        student = cursor.fetchone()
+
+        if not student:
+
+            flash("Student not found.", "danger")
+
+            return redirect(
+                url_for("counsellor_dashboard")
+            )
+
+        # ----------------------------------------------------
+        # CHECK CHAT EXISTS
+        # ----------------------------------------------------
+
+        cursor.execute("""
+            SELECT chat_id
+            FROM counsellor_chat
+            WHERE student_id = %s
+              AND counsellor_id = %s
+            LIMIT 1
+        """, (
+            student_id,
+            counsellor_id
+        ))
+
+        existing_chat = cursor.fetchone()
+
+        if not existing_chat:
+
+            flash(
+                "No chat found for this student.",
+                "info"
+            )
+
+            return redirect(
+                url_for("counsellor_dashboard")
+            )
+
+        # ----------------------------------------------------
+        # SEND MESSAGE
+        # ----------------------------------------------------
+
+        if request.method == "POST":
+
+            message = request.form.get(
+                "message",
+                ""
+            ).strip()
+
+            if not message:
+
+                flash(
+                    "Please enter a message.",
+                    "warning"
+                )
+
+                return redirect(
+                    url_for(
+                        "counsellor_chat_student",
+                        student_id=student_id
+                    )
+                )
+
+            cursor.execute("""
+                INSERT INTO counsellor_chat
+                (
+                    student_id,
+                    counsellor_id,
+                    sender_role,
+                    message
+                )
+                VALUES
+                (
+                    %s,
+                    %s,
+                    'COUNSELLOR',
+                    %s
+                )
+            """, (
+                student_id,
+                counsellor_id,
+                message
+            ))
+
+            db.commit()
+
+            return redirect(
+                url_for(
+                    "counsellor_chat_student",
+                    student_id=student_id
+                )
+            )
+
+        # ----------------------------------------------------
+        # CHAT HISTORY
+        # ----------------------------------------------------
+
+        cursor.execute("""
+            SELECT
+                chat_id,
+                sender_role,
+                message,
+                created_at
+            FROM counsellor_chat
+            WHERE student_id = %s
+              AND counsellor_id = %s
+            ORDER BY
+                created_at ASC,
+                chat_id ASC
+        """, (
+            student_id,
+            counsellor_id
+        ))
+
+        messages = cursor.fetchall()
+
+        # ----------------------------------------------------
+        # STUDENT LATEST ASSESSMENT
+        # ----------------------------------------------------
+
+        cursor.execute("""
+            SELECT
+                score,
+                risk_level,
+                recommendation
+            FROM assessments
+            WHERE user_id = %s
+            ORDER BY created_at DESC
+            LIMIT 1
+        """, (student_id,))
+
+        assessment = cursor.fetchone()
+
+        # ----------------------------------------------------
+        # COUNSELLOR DETAILS
+        # ----------------------------------------------------
+
+        cursor.execute("""
+            SELECT
+                u.user_id,
+                u.username,
+                u.email,
+                c.qualification,
+                c.specialization,
+                c.experience
+            FROM users u
+
+            INNER JOIN roles r
+                ON u.role_id = r.role_id
+
+            LEFT JOIN counsellor_details c
+                ON u.user_id = c.user_id
+
+            WHERE u.user_id = %s
+              AND r.role = 'COUNSELLOR'
+
+            LIMIT 1
+        """, (counsellor_id,))
+
+        counsellor = cursor.fetchone()
+
+        # ----------------------------------------------------
+        # OPEN CHAT PAGE
+        # ----------------------------------------------------
+
+        return render_template(
+            "counsellor_chat.html",
+            student=student,
+            counsellor=counsellor,
+            messages=messages,
+            role="COUNSELLOR",
+            assessment=assessment
+        )
+
+    except mysql.connector.Error as err:
+
+        db.rollback()
+
+        print(
+            "Counsellor Student Chat Error:",
+            err
+        )
+
+        flash(
+            "Unable to load chat.",
+            "danger"
+        )
+
+        return redirect(
+            url_for("counsellor_dashboard")
+        )
+
+    finally:
+
+        cursor.close()
+        db.close()
 # ===========================
 # LOGOUT
 # ===========================
@@ -3814,15 +4085,6 @@ def logout():
     )
 
 
-# ===========================
-# RUN APPLICATION
-# ===========================
-
-if __name__ == "__main__":
-
-    app.run(
-        debug=True
-    )
 # ===========================
 # RUN APPLICATION
 # ===========================
